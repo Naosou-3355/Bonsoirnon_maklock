@@ -23,8 +23,8 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild build \
-            -project MakLock.xcodeproj \
-            -scheme MakLock \
+            -project BonsoirNon.xcodeproj \
+            -scheme BonsoirNon \
             -destination 'platform=macOS' \
             -configuration Debug \
             -onlyUsePackageVersionsFromResolvedFile \
@@ -34,8 +34,8 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild build \
-            -project MakLock.xcodeproj \
-            -scheme MakLock \
+            -project BonsoirNon.xcodeproj \
+            -scheme BonsoirNon \
             -destination 'platform=macOS' \
             -configuration Release \
             -onlyUsePackageVersionsFromResolvedFile \

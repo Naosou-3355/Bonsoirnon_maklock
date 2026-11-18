@@ -38,7 +38,7 @@ App de barre des menus : quand quelqu'un ouvre ou bascule vers une app protégé
    ```bash
    git clone https://github.com/Naosou-3355/Bonsoirnon_maklock.git
    cd Bonsoirnon_maklock
-   open MakLock.xcodeproj
+   open BonsoirNon.xcodeproj
    ```
 3. Dans Xcode : **Signing & Capabilities** → choisir ton équipe, puis `Cmd+R`.
 

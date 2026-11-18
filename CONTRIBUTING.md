@@ -15,7 +15,7 @@ Thanks for your interest in contributing to Bonsoir, non! Here's how to get star
 ```bash
 git clone https://github.com/Naosou-3355/Bonsoirnon_maklock.git
 cd Bonsoirnon_maklock
-open MakLock.xcodeproj
+open BonsoirNon.xcodeproj
 ```
 
 Build and run with `Cmd+R` in Xcode. The app runs as a menu bar application (no Dock icon).
@@ -23,7 +23,7 @@ Build and run with `Cmd+R` in Xcode. The app runs as a menu bar application (no 
 ## Project Structure
 
 ```
-MakLock/
+BonsoirNon/
   App/        - Entry point, AppDelegate, AppState
   Core/       - Services, Managers, Storage (no UI)
   UI/         - Design system, Components, Views

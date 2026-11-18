@@ -30,8 +30,8 @@ jobs:
       - name: Build
         run: |
           xcodebuild build \
-            -project MakLock.xcodeproj \
-            -scheme MakLock \
+            -project BonsoirNon.xcodeproj \
+            -scheme BonsoirNon \
             -destination 'platform=macOS' \
             -configuration Debug \
             -onlyUsePackageVersionsFromResolvedFile \
