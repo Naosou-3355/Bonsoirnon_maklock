@@ -12,7 +12,7 @@ permissions: {}
 
 jobs:
   analyze:
-    runs-on: macos-14
+    runs-on: macos-15
     permissions:
       contents: read
       security-events: write
@@ -29,7 +29,6 @@ jobs:
 
       - name: Build
         run: |
-          sudo xcode-select -s /Applications/Xcode_15.4.app || sudo xcode-select -s /Applications/Xcode.app
           xcodebuild build \
             -project MakLock.xcodeproj \
             -scheme MakLock \
