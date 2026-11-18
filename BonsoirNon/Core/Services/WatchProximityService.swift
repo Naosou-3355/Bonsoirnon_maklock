@@ -90,7 +90,9 @@ final class WatchProximityService: NSObject, ObservableObject {
 
     /// RSSI threshold: values below this are considered "out of range".
     /// Default: -70 dBm (roughly 2-3 meters).
-    var rssiThreshold: Int = -70
+    var rssiThreshold: Int = -70 {
+        didSet { proximity.inThreshold = rssiThreshold }
+    }
 
     private var centralManager: CBCentralManager?
     private var pairedPeripheral: CBPeripheral?
@@ -106,8 +108,8 @@ final class WatchProximityService: NSObject, ObservableObject {
     private static let baseReconnectDelay: TimeInterval = 1
 
     /// Number of consecutive out-of-range RSSI readings before triggering.
-    private let outOfRangeCount = 3
-    private var consecutiveOutOfRange = 0
+    /// Smoothed, hysteresis-based range decision (see `ProximityFilter`).
+    private var proximity = ProximityFilter(inThreshold: -70)
 
     /// Timestamp of last RSSI reading (connection or scan-based).
     private var lastRSSITime: Date?
@@ -123,6 +125,7 @@ final class WatchProximityService: NSObject, ObservableObject {
 
         // Restore RSSI threshold from settings
         rssiThreshold = Defaults.shared.appSettings.watchRssiThreshold
+        proximity.inThreshold = rssiThreshold
     }
 
     /// Start BLE scanning for the paired Watch.
@@ -150,7 +153,7 @@ final class WatchProximityService: NSObject, ObservableObject {
         isWatchInRange = false
         isWatchUnlocked = nil
         lastUnlockedReadingAt = nil
-        consecutiveOutOfRange = 0
+        proximity.reset()
         lastRSSITime = nil
         watchLog("Watch proximity scanning stopped")
     }
@@ -199,16 +202,12 @@ final class WatchProximityService: NSObject, ObservableObject {
             attemptReconnect()
         }
 
-        // If no RSSI reading in 20s and we think we're in range, start treating
-        // scan-based RSSI as stale and let out-of-range logic kick in
-        if isWatchInRange, let last = lastRSSITime, Date().timeIntervalSince(last) > 20 {
-            watchLog("Health check: no RSSI for 20s while in-range, incrementing out-of-range")
-            consecutiveOutOfRange += 1
-            if consecutiveOutOfRange >= outOfRangeCount {
-                isWatchInRange = false
-                watchLog("Health check: Watch marked OUT OF RANGE (stale RSSI)")
-                onWatchOutOfRange?()
-            }
+        // No RSSI at all for 45 s while "in range": the Watch is gone.
+        if isWatchInRange, let last = lastRSSITime, Date().timeIntervalSince(last) > 45 {
+            proximity.reset()
+            isWatchInRange = false
+            watchLog("Health check: Watch marked OUT OF RANGE (no RSSI for 45 s)")
+            onWatchOutOfRange?()
         }
     }
 
@@ -254,20 +253,17 @@ final class WatchProximityService: NSObject, ObservableObject {
     private func handleRSSI(_ rssi: Int) {
         lastRSSITime = Date()
 
-        if rssi < rssiThreshold {
-            consecutiveOutOfRange += 1
-            if consecutiveOutOfRange >= outOfRangeCount && isWatchInRange {
-                isWatchInRange = false
-                watchLog("Watch OUT OF RANGE (RSSI: \(rssi), threshold: \(rssiThreshold))")
-                onWatchOutOfRange?()
-            }
-        } else {
-            consecutiveOutOfRange = 0
-            if !isWatchInRange {
-                isWatchInRange = true
-                watchLog("Watch IN RANGE (RSSI: \(rssi))")
-                onWatchInRange?()
-            }
+        switch proximity.add(rssi) {
+        case .wentOutOfRange:
+            isWatchInRange = false
+            watchLog("Watch OUT OF RANGE (RSSI: \(rssi), median: \(proximity.median ?? rssi), out below: \(proximity.outThreshold))")
+            onWatchOutOfRange?()
+        case .cameInRange:
+            isWatchInRange = true
+            watchLog("Watch IN RANGE (RSSI: \(rssi), median: \(proximity.median ?? rssi))")
+            onWatchInRange?()
+        case .none:
+            break
         }
     }
 

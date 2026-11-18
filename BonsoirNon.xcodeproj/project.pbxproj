@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A10000000000000000002002 /* LockPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000002001 /* LockPolicy.swift */; };
 		3C36B23C6F719E84D10ECE91 /* AppInactivityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D8AAF1355AD0ACA8137F01D /* AppInactivityService.swift */; };
 		A10000000000000000000001 /* BonsoirNonApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000011 /* BonsoirNonApp.swift */; };
 		A10000000000000000000002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000012 /* Assets.xcassets */; };
@@ -55,6 +56,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A10000000000000000002001 /* LockPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockPolicy.swift; sourceTree = "<group>"; };
 		4D8AAF1355AD0ACA8137F01D /* AppInactivityService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppInactivityService.swift; sourceTree = "<group>"; };
 		A10000000000000000000010 /* Bonsoir Non.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Bonsoir Non.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10000000000000000000011 /* BonsoirNonApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonsoirNonApp.swift; sourceTree = "<group>"; };
@@ -116,6 +118,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A10000000000000000002000 /* Policy */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000002001 /* LockPolicy.swift */,
+			);
+			path = Policy;
+			sourceTree = "<group>";
+		};
 		A10000000000000000000030 = {
 			isa = PBXGroup;
 			children = (
@@ -166,6 +176,7 @@
 		A100000000000000000000C0 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				A10000000000000000002000 /* Policy */,
 				A100000000000000000000C1 /* Services */,
 				A100000000000000000000C2 /* Managers */,
 				A100000000000000000000C3 /* Storage */,
@@ -380,6 +391,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000002002 /* LockPolicy.swift in Sources */,
 				A10000000000000000000001 /* BonsoirNonApp.swift in Sources */,
 				A10000000000000000000101 /* Colors.swift in Sources */,
 				A10000000000000000000102 /* Typography.swift in Sources */,

@@ -7,9 +7,10 @@ import Security
 /// The password itself is never stored: only a salted PBKDF2-HMAC-SHA256 hash
 /// (600,000 iterations, per the OWASP Password Storage Cheat Sheet).
 final class KeychainManager {
-    static let shared = KeychainManager()
+    static let shared = KeychainManager(service: "com.bonsoirnon.app")
 
-    private let service = "com.bonsoirnon.app"
+    /// Keychain service name. Tests use a different one so they never touch real data.
+    let service: String
     private let account = "backup-password-hash"
 
     private static let iterations: UInt32 = 600_000
@@ -17,7 +18,9 @@ final class KeychainManager {
     private static let hashLength = 32
     private static let formatPrefix = "pbkdf2-sha256"
 
-    private init() {}
+    init(service: String) {
+        self.service = service
+    }
 
     /// Hash and save a password to the Keychain.
     @discardableResult
