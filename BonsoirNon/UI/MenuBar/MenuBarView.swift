@@ -12,8 +12,11 @@ struct MenuBarView: View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
             HStack {
-                Image(systemName: "lock.fill")
-                    .font(.system(size: 14, weight: .semibold))
+                Image("MenuBarIcon")
+                    .renderingMode(.template)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 16)
                     .foregroundColor(BonsoirNonColors.gold)
                 Text("Bonsoir, non")
                     .font(BonsoirNonTypography.headline)

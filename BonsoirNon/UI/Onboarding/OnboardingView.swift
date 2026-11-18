@@ -10,7 +10,7 @@ struct OnboardingView: View {
 
     private let infoSteps: [Int: OnboardingInfoStep] = [
         0: OnboardingInfoStep(
-            icon: "lock.shield.fill",
+            icon: OnboardingInfoStep.appIcon,
             title: "Welcome to Bonsoir, non",
             description: "Lock any macOS app with Touch ID or password.\nYour apps, your privacy."
         ),
@@ -91,10 +91,16 @@ private struct InfoStepView: View {
         VStack(spacing: 20) {
             Spacer()
 
-            Image(systemName: step.icon)
-                .font(.system(size: 48))
-                .foregroundColor(BonsoirNonColors.gold)
-                .frame(height: 60)
+            if step.icon == OnboardingInfoStep.appIcon {
+                Image(nsImage: NSApplication.shared.applicationIconImage)
+                    .resizable()
+                    .frame(width: 80, height: 80)
+            } else {
+                Image(systemName: step.icon)
+                    .font(.system(size: 48))
+                    .foregroundColor(BonsoirNonColors.gold)
+                    .frame(height: 60)
+            }
 
             Text(step.title)
                 .font(BonsoirNonTypography.largeTitle)
@@ -380,6 +386,9 @@ private struct FinalStep: View {
 // MARK: - Models
 
 private struct OnboardingInfoStep {
+    /// Pass as `icon` to show the app icon instead of an SF Symbol.
+    static let appIcon = "__appIcon__"
+
     let icon: String
     let title: String
     let description: String
