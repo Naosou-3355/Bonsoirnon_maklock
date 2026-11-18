@@ -143,6 +143,13 @@ final class AppMonitorService: ObservableObject {
         authenticatedApps.remove(bundleIdentifier)
     }
 
+    /// Put an app back in the locked state after its overlay closed without unlocking:
+    /// not authenticated, and no pending prompt, so the next activation shows the overlay again.
+    func resetLock(for bundleIdentifier: String) {
+        authenticatedApps.remove(bundleIdentifier)
+        pendingLockBundleIDs.remove(bundleIdentifier)
+    }
+
     /// Check if an app is currently authenticated.
     func isAuthenticated(_ bundleIdentifier: String) -> Bool {
         authenticatedApps.contains(bundleIdentifier)

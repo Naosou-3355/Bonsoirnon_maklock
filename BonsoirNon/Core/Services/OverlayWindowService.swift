@@ -82,14 +82,28 @@ final class OverlayWindowService {
         overlayWindows.forEach { $0.close() }
         overlayWindows.removeAll()
 
-        if let bundleID = currentApp?.bundleIdentifier {
-            AppMonitorService.shared.clearAuthentication(for: bundleID)
-            NSWorkspace.shared.runningApplications
-                .first(where: { $0.bundleIdentifier == bundleID })?
-                .hide()
+        let lockedApp = currentApp
+        currentApp = nil
+
+        if let lockedApp {
+            let bundleID = lockedApp.bundleIdentifier
+            AppMonitorService.shared.resetLock(for: bundleID)
+            let running = NSWorkspace.shared.runningApplications
+                .first(where: { $0.bundleIdentifier == bundleID })
+            running?.hide()
+
+            // If the app refused to hide and is still in front, lock it again
+            // rather than leaving it usable.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                guard let self, !self.isShowing,
+                      let running, !running.isTerminated,
+                      running.isActive, !running.isHidden
+                else { return }
+                NSLog("[BonsoirNon] Protected app still in front after timeout — re-locking")
+                self.show(for: lockedApp)
+            }
         }
 
-        currentApp = nil
         NSLog("[BonsoirNon] Overlay timed out — protected app hidden, still locked")
     }
 
