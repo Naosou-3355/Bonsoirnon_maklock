@@ -8,11 +8,11 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in MakLock, please report it responsibly.
+If you discover a security vulnerability in Bonsoir, non, please report it responsibly.
 
 **Do not open a public issue for security vulnerabilities.**
 
-Instead, please email the maintainer directly or use [GitHub's private vulnerability reporting](https://github.com/dutkiewiczmaciej/MakLock/security/advisories/new).
+Instead, please email the maintainer directly or use [GitHub's private vulnerability reporting](https://github.com/Naosou-3355/Bonsoirnon_maklock/security/advisories/new).
 
 ### What to Include
 
@@ -29,10 +29,12 @@ Instead, please email the maintainer directly or use [GitHub's private vulnerabi
 
 ## Security Design
 
-MakLock is designed with security in mind:
+Bonsoir, non is designed with security in mind:
 
-- **No data collection** — MakLock does not collect, transmit, or store any user data beyond local preferences
+- **No data collection** — Bonsoir, non does not collect, transmit, or store any user data beyond local preferences
 - **No network access** — the app does not make any network connections (Bluetooth is local-only for Apple Watch)
-- **Keychain storage** — backup passwords are stored in the macOS Keychain
+- **Keychain storage** — only a salted PBKDF2-SHA256 hash of the backup password is stored in the macOS Keychain, with an escalating lockout after 5 failed attempts
 - **System blacklist** — critical system apps (Terminal, Xcode, Activity Monitor) can never be locked
-- **Panic key** — emergency overlay dismissal is always available
+- **Panic key** — emergency overlay dismissal is available in DEBUG builds only
+- **Timeout failsafe** — after 60 s the overlay closes and hides the protected app, which stays locked
+- **No auto-update** — Sparkle has been removed; updates are manual
