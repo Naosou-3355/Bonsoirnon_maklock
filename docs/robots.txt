@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://dutkiewiczmaciej.github.io/MakLock/sitemap.xml
+Sitemap: https://naosou-3355.github.io/Bonsoirnon_maklock/sitemap.xml
