@@ -13,10 +13,8 @@ final class SettingsAuthService {
     /// Whether Apple Watch can bypass the challenge (on wrist + in range).
     var canWatchBypass: Bool {
         let settings = Defaults.shared.appSettings
-        let watch = WatchProximityService.shared
         return settings.useWatchUnlock
-            && watch.isWatchInRange
-            && (watch.isWatchUnlocked ?? false)
+            && WatchProximityService.shared.canAutoUnlock
     }
 
     /// Whether no authentication method is available (safety valve).

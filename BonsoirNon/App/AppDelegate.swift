@@ -27,10 +27,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         AppMonitorService.shared.onProtectedAppDetected = { [weak self] app in
             // Auto-unlock if Watch is in range AND unlocked (on wrist).
             // If Watch is nearby but locked/off wrist, fall through to Touch ID.
-            let watch = WatchProximityService.shared
             let watchCanUnlock = Defaults.shared.appSettings.useWatchUnlock
-                && watch.isWatchInRange
-                && (watch.isWatchUnlocked ?? false)
+                && WatchProximityService.shared.canAutoUnlock
             if watchCanUnlock {
                 AppMonitorService.shared.markAuthenticated(app.bundleIdentifier)
                 WatchUnlockToast.shared.show(for: app.bundleIdentifier)
@@ -108,7 +106,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         WatchProximityService.shared.onWatchInRange = { [weak self] in
             guard OverlayWindowService.shared.isShowing else { return }
             // Only auto-unlock if Watch is on wrist (unlocked)
-            guard WatchProximityService.shared.isWatchUnlocked ?? false else { return }
+            guard WatchProximityService.shared.canAutoUnlock else { return }
             let lockedBundleID = OverlayWindowService.shared.currentBundleIdentifier
             let lockedAppName = OverlayWindowService.shared.currentAppName
             OverlayWindowService.shared.hide()

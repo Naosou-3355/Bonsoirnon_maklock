@@ -47,6 +47,22 @@ final class WatchProximityService: NSObject, ObservableObject {
     /// `nil` means we haven't received lock state data yet (treated as locked: no auto-unlock).
     @Published private(set) var isWatchUnlocked: Bool?
 
+    /// When the paired Watch last reported itself unlocked.
+    private var lastUnlockedReadingAt: Date?
+
+    /// An "unlocked" reading older than this no longer counts.
+    private static let unlockedReadingMaxAge: TimeInterval = 20
+
+    /// Whether the Watch may unlock apps right now: in range, and the paired Watch
+    /// itself reported "unlocked" recently. Anything unknown or stale means locked.
+    var canAutoUnlock: Bool {
+        guard isWatchInRange, isWatchUnlocked == true,
+              let last = lastUnlockedReadingAt,
+              Date().timeIntervalSince(last) <= Self.unlockedReadingMaxAge
+        else { return false }
+        return true
+    }
+
     /// Whether BLE scanning is active.
     @Published private(set) var isScanning = false
 
@@ -93,11 +109,6 @@ final class WatchProximityService: NSObject, ObservableObject {
     private let outOfRangeCount = 3
     private var consecutiveOutOfRange = 0
 
-    /// Number of consecutive "locked" Nearby Info readings before changing lock state.
-    /// Prevents flapping from occasional noisy BLE packets.
-    private let lockedReadingsRequired = 5
-    private var consecutiveLockedReadings = 0
-
     /// Timestamp of last RSSI reading (connection or scan-based).
     private var lastRSSITime: Date?
 
@@ -138,8 +149,8 @@ final class WatchProximityService: NSObject, ObservableObject {
         isScanning = false
         isWatchInRange = false
         isWatchUnlocked = nil
+        lastUnlockedReadingAt = nil
         consecutiveOutOfRange = 0
-        consecutiveLockedReadings = 0
         lastRSSITime = nil
         watchLog("Watch proximity scanning stopped")
     }
@@ -355,25 +366,23 @@ extension WatchProximityService: CBCentralManagerDelegate {
         let name = peripheralName ?? advName
 
         // --- Nearby Info detection: check lock state from Continuity packets ---
-        // Apple Watch rotates BLE addresses for privacy, so Nearby Info may arrive
-        // from a different UUID than the paired one.
-        // Strategy: Accept "unlocked" from any Apple device (safe — if ANY nearby device
-        // reports unlocked, Watch is likely on wrist). Only accept "locked" from the
-        // paired Watch UUID to avoid false locks from other devices (iPhone, Mac, etc.).
-        if let lockState = parseNearbyInfoLockState(from: advertisementData) {
-            let isPairedDevice = peripheral.identifier == pairedWatchIdentifier
+        // Only the paired Watch is trusted, in both directions: any other Apple device
+        // (an iPhone, an iPad, someone else's phone) says nothing about the Watch.
+        // A single "locked" reading locks immediately (fail-safe). If the Watch rotates
+        // its BLE address, readings stop, the last "unlocked" goes stale and
+        // canAutoUnlock turns false: the user falls back to Touch ID or password.
+        if let lockState = parseNearbyInfoLockState(from: advertisementData),
+           peripheral.identifier == pairedWatchIdentifier {
             if lockState {
-                // Unlocked → accept from any device (safe direction)
-                consecutiveLockedReadings = 0
+                lastUnlockedReadingAt = Date()
                 if isWatchUnlocked != true {
-                    watchLog("Watch lock state changed: unlocked=true (from peripheral: \(peripheral.identifier.uuidString), paired: \(isPairedDevice))")
+                    watchLog("Watch lock state changed: unlocked=true")
                     isWatchUnlocked = true
                 }
-            } else if isPairedDevice {
-                // Locked → only trust from paired Watch UUID to avoid false locks
-                consecutiveLockedReadings += 1
-                if consecutiveLockedReadings >= lockedReadingsRequired && isWatchUnlocked != false {
-                    watchLog("Watch lock state changed: unlocked=false (after \(consecutiveLockedReadings) readings)")
+            } else {
+                lastUnlockedReadingAt = nil
+                if isWatchUnlocked != false {
+                    watchLog("Watch lock state changed: unlocked=false")
                     isWatchUnlocked = false
                 }
             }
