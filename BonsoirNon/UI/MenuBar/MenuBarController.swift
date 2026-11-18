@@ -83,33 +83,38 @@ final class MenuBarController {
 
     private func updateIcon() {
         guard let button = statusItem?.button else { return }
-        let symbolName: String
-        switch iconState {
-        case .idle:
-            symbolName = "lock.open"
-        case .active:
-            symbolName = "lock"
-        case .locked:
-            symbolName = "lock.fill"
+        // Template image: white on a dark menu bar, black on a light one.
+        guard let hand = NSImage(named: "MenuBarIcon") else { return }
+        hand.isTemplate = true
+        hand.accessibilityDescription = "Bonsoir, non"
+
+        // Idle (no protected app running): dimmed hand.
+        button.appearsDisabled = (iconState == .idle)
+
+        guard iconState == .locked else {
+            button.image = hand
+            return
         }
 
-        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "Bonsoir, non")
-
-        // Add a small badge dot for locked state
-        if iconState == .locked, let baseImage = image {
-            let size = NSSize(width: 18, height: 18)
-            let badged = NSImage(size: size, flipped: false) { rect in
-                baseImage.draw(in: NSRect(x: 0, y: 2, width: 14, height: 14))
-                NSColor.systemOrange.setFill()
-                let dot = NSRect(x: 12, y: 12, width: 6, height: 6)
-                NSBezierPath(ovalIn: dot).fill()
+        // Locked: hand tinted for the current appearance, plus an orange dot.
+        let handSize = hand.size
+        let size = NSSize(width: handSize.width + 5, height: 18)
+        let badged = NSImage(size: size, flipped: false) { _ in
+            let handRect = NSRect(x: 0, y: 0, width: handSize.width, height: handSize.height)
+            let tinted = NSImage(size: handSize, flipped: false) { rect in
+                hand.draw(in: rect)
+                NSColor.labelColor.set()
+                rect.fill(using: .sourceAtop)
                 return true
             }
-            badged.isTemplate = false
-            button.image = badged
-        } else {
-            button.image = image
+            tinted.draw(in: handRect)
+            NSColor.systemOrange.setFill()
+            NSBezierPath(ovalIn: NSRect(x: size.width - 6, y: size.height - 6, width: 6, height: 6)).fill()
+            return true
         }
+        badged.isTemplate = false
+        badged.accessibilityDescription = "Bonsoir, non (locked)"
+        button.image = badged
     }
 }
 
