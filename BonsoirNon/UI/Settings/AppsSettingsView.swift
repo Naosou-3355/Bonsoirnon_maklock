@@ -70,12 +70,25 @@ struct AppsSettingsView: View {
 
                     Toggle("", isOn: Binding(
                         get: { app.isEnabled },
-                        set: { _ in manager.toggleApp(app) }
+                        set: { enable in
+                            if enable {
+                                manager.toggleApp(app)
+                            } else {
+                                // Turning protection off weakens security: authenticate first.
+                                requireAuthentication(reason: "Stop protecting \(app.name)") {
+                                    manager.toggleApp(app)
+                                }
+                            }
+                        }
                     ))
                     .toggleStyle(.goldSwitch)
                     .labelsHidden()
 
-                    Button(action: { manager.removeApp(app) }) {
+                    Button(action: {
+                        requireAuthentication(reason: "Remove \(app.name) from protected apps") {
+                            manager.removeApp(app)
+                        }
+                    }) {
                         Image(systemName: "trash")
                             .font(.system(size: 12))
                             .foregroundColor(BonsoirNonColors.error)
@@ -87,7 +100,20 @@ struct AppsSettingsView: View {
             }
             .onDelete { indexSet in
                 let appsToRemove = indexSet.map { manager.apps[$0] }
-                appsToRemove.forEach { manager.removeApp($0) }
+                let names = appsToRemove.map(\.name).joined(separator: ", ")
+                requireAuthentication(reason: "Remove \(names) from protected apps") {
+                    appsToRemove.forEach { manager.removeApp($0) }
+                }
+            }
+        }
+    }
+
+    /// Run `action` only after Touch ID (or the macOS password as fallback) succeeds.
+    /// The Watch is deliberately not accepted here: removing protection needs an explicit proof.
+    private func requireAuthentication(reason: String, action: @escaping () -> Void) {
+        AuthenticationService.shared.authenticateWithSystemFallback(reason: reason) { result in
+            if case .success = result {
+                action()
             }
         }
     }
