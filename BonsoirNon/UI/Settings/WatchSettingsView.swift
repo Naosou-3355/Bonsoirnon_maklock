@@ -17,7 +17,7 @@ struct WatchSettingsView: View {
 
                 if watchService.bluetoothState == .poweredOn || watchService.bluetoothState == .unknown {
                     Toggle("Use Apple Watch to unlock", isOn: $settings.useWatchUnlock)
-                        .onChange(of: settings.useWatchUnlock) { enabled in
+                        .onChange(of: settings.useWatchUnlock) { _, enabled in
                             Defaults.shared.appSettings = settings
                             if enabled {
                                 watchService.startScanning()
@@ -86,7 +86,7 @@ struct WatchSettingsView: View {
                         HStack {
                             Text("Range:")
                             Slider(value: $sensitivity, in: 0...100, step: 10)
-                                .onChange(of: sensitivity) { value in
+                                .onChange(of: sensitivity) { _, value in
                                     let rssi = Int(-90 + (value / 100.0) * 40)
                                     watchService.rssiThreshold = rssi
                                     var s = Defaults.shared.appSettings

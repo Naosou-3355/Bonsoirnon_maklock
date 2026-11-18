@@ -14,13 +14,13 @@ struct SecuritySettingsView: View {
             Section {
                 Toggle("Require authentication on app launch", isOn: $settings.requireAuthOnLaunch)
                     .toggleStyle(.goldSwitch)
-                    .onChange(of: settings.requireAuthOnLaunch) { _ in
+                    .onChange(of: settings.requireAuthOnLaunch) {
                         Defaults.shared.appSettings = settings
                     }
 
                 Toggle("Require authentication on app switch", isOn: $settings.requireAuthOnActivate)
                     .toggleStyle(.goldSwitch)
-                    .onChange(of: settings.requireAuthOnActivate) { _ in
+                    .onChange(of: settings.requireAuthOnActivate) {
                         Defaults.shared.appSettings = settings
                     }
             }

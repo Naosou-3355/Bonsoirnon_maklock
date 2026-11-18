@@ -92,9 +92,9 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
-        .onChange(of: settings.launchAtLogin) { _ in save() }
-        .onChange(of: settings.lockOnSleep) { _ in save() }
-        .onChange(of: settings.lockOnIdle) { _ in save() }
+        .onChange(of: settings.launchAtLogin) { save() }
+        .onChange(of: settings.lockOnSleep) { save() }
+        .onChange(of: settings.lockOnIdle) { save() }
     }
 
     private func save() {
