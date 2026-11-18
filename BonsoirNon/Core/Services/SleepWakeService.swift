@@ -36,7 +36,49 @@ final class SleepWakeService {
             object: nil
         )
 
+        // Display sleep (screen turns off without the Mac sleeping)
+        center.addObserver(self, selector: #selector(handleScreenLocked),
+                           name: NSWorkspace.screensDidSleepNotification, object: nil)
+        center.addObserver(self, selector: #selector(handleScreenWake),
+                           name: NSWorkspace.screensDidWakeNotification, object: nil)
+
+        // Session lock (lock screen, screen saver with password, Ctrl+Cmd+Q)
+        let distributed = DistributedNotificationCenter.default()
+        distributed.addObserver(self, selector: #selector(handleScreenLocked),
+                                name: NSNotification.Name("com.apple.screenIsLocked"), object: nil)
+        distributed.addObserver(self, selector: #selector(handleScreenUnlocked),
+                                name: NSNotification.Name("com.apple.screenIsUnlocked"), object: nil)
+
         NSLog("[BonsoirNon] Sleep/wake observer started")
+    }
+
+    /// Callback when the screen turns off or the session is locked.
+    var onScreenLocked: (() -> Void)?
+
+    /// Callback when the user is back at an unlocked, awake screen.
+    var onScreenUnlocked: (() -> Void)?
+
+    /// Whether the login window / lock screen is currently shown.
+    private var isSessionLocked: Bool {
+        guard let info = CGSessionCopyCurrentDictionary() as? [String: Any] else { return false }
+        return (info["CGSSessionScreenIsLocked"] as? Bool) ?? false
+    }
+
+    @objc private func handleScreenLocked(_ notification: Notification) {
+        NSLog("[BonsoirNon] Screen locked or asleep (%@)", notification.name.rawValue)
+        onScreenLocked?()
+    }
+
+    @objc private func handleScreenWake(_ notification: Notification) {
+        // If the lock screen is up, wait for screenIsUnlocked instead.
+        guard !isSessionLocked else { return }
+        NSLog("[BonsoirNon] Screen woke without lock screen")
+        onScreenUnlocked?()
+    }
+
+    @objc private func handleScreenUnlocked(_ notification: Notification) {
+        NSLog("[BonsoirNon] Screen unlocked")
+        onScreenUnlocked?()
     }
 
     /// Stop observing sleep/wake notifications.
@@ -45,6 +87,7 @@ final class SleepWakeService {
         isObserving = false
 
         NSWorkspace.shared.notificationCenter.removeObserver(self)
+        DistributedNotificationCenter.default().removeObserver(self)
         NSLog("[BonsoirNon] Sleep/wake observer stopped")
     }
 

@@ -87,6 +87,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.terminateAutoCloseApps()
         }
 
+        // Screen off / session locked → forget every unlock; the user must
+        // authenticate again when they come back.
+        SleepWakeService.shared.onScreenLocked = {
+            guard Defaults.shared.appSettings.lockOnSleep else { return }
+            AppMonitorService.shared.clearAllAuthentications()
+        }
+
+        // Back at the screen → lock the protected app that is in front (it won't
+        // get a fresh activation event). Others lock when they are next activated.
+        SleepWakeService.shared.onScreenUnlocked = { [weak self] in
+            guard Defaults.shared.appSettings.lockOnSleep else { return }
+            self?.lockFrontmostProtectedApp()
+        }
+
         // Start sleep/wake observer
         SleepWakeService.shared.startObserving()
 
@@ -139,6 +153,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if showedOverlay {
             menuBarController.iconState = .locked
         }
+    }
+
+    /// Show the overlay for the frontmost app if it is protected and not unlocked.
+    private func lockFrontmostProtectedApp() {
+        guard Defaults.shared.appSettings.isProtectionEnabled,
+              !OverlayWindowService.shared.isShowing,
+              let bundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
+              !SafetyManager.isBlacklisted(bundleID),
+              !AppMonitorService.shared.isAuthenticated(bundleID),
+              let app = ProtectedAppsManager.shared.apps.first(where: {
+                  $0.bundleIdentifier == bundleID && $0.isEnabled
+              })
+        else { return }
+
+        NSLog("[BonsoirNon] Re-locking frontmost app after screen lock: %@", bundleID)
+        OverlayWindowService.shared.show(for: app)
+        menuBarController.iconState = .locked
     }
 
     /// Terminate any running auto-close apps (safety net for wake from sleep).

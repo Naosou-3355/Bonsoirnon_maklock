@@ -65,6 +65,13 @@ final class AppMonitorService: ObservableObject {
                 guard let bundleID = app.bundleIdentifier else { return }
                 guard self?.authenticatedApps.contains(bundleID) == true else { return }
 
+                // "Require authentication on app switch": leaving the app locks it again.
+                if Defaults.shared.appSettings.requireAuthOnActivate {
+                    self?.resetLock(for: bundleID)
+                    NSLog("[BonsoirNon] App switched away, auth cleared: %@", bundleID)
+                    return
+                }
+
                 // Delay to let window close animations finish
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                     guard let self else { return }

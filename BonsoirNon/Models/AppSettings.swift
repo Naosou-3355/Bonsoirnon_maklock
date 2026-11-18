@@ -18,7 +18,7 @@ struct AppSettings: Codable {
     var requireAuthOnLaunch: Bool = true
 
     /// Require authentication when switching to a protected app.
-    var requireAuthOnActivate: Bool = false
+    var requireAuthOnActivate: Bool = true
 
     /// Use Apple Watch proximity for auto-unlock.
     var useWatchUnlock: Bool = false

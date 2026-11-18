@@ -13,7 +13,7 @@ struct GeneralSettingsView: View {
                 Toggle("Launch Bonsoir, non at login", isOn: $settings.launchAtLogin)
                     .toggleStyle(.goldSwitch)
 
-                Toggle("Lock apps when Mac sleeps", isOn: $settings.lockOnSleep)
+                Toggle("Lock apps when the screen locks or the Mac sleeps", isOn: $settings.lockOnSleep)
                     .toggleStyle(.goldSwitch)
             }
 
