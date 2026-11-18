@@ -33,6 +33,16 @@ final class MenuBarController {
             onToggleProtection: { [weak self] in
                 self?.toggleProtection()
             },
+            onRequestDisable: { [weak popover] completion in
+                // Keep the popover open while the Touch ID dialog has focus.
+                popover?.behavior = .applicationDefined
+                AuthenticationService.shared.confirmSensitiveAction(
+                    reason: "Turn off Bonsoir, non protection"
+                ) { success in
+                    popover?.behavior = .transient
+                    completion(success)
+                }
+            },
             onSettingsClicked: { [weak self] in
                 self?.hidePopover()
                 let screen = self?.statusItem?.button?.window?.screen

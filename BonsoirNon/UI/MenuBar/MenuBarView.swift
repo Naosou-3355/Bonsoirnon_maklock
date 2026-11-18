@@ -3,6 +3,8 @@ import SwiftUI
 /// SwiftUI content for the menu bar popover dropdown.
 struct MenuBarView: View {
     let onToggleProtection: () -> Void
+    /// Asks for authentication before protection is turned off; calls back with the result.
+    let onRequestDisable: (@escaping (Bool) -> Void) -> Void
     let onSettingsClicked: () -> Void
     let onQuitClicked: () -> Void
 
@@ -38,12 +40,24 @@ struct MenuBarView: View {
                     .font(BonsoirNonTypography.body)
                     .foregroundColor(.secondary)
                 Spacer()
-                Toggle("", isOn: $isProtectionEnabled)
+                Toggle("", isOn: Binding(
+                    get: { isProtectionEnabled },
+                    set: { enable in
+                        if enable {
+                            isProtectionEnabled = true
+                            onToggleProtection()
+                        } else {
+                            // Turning protection off needs Touch ID or the macOS password.
+                            onRequestDisable { success in
+                                guard success else { return }
+                                isProtectionEnabled = false
+                                onToggleProtection()
+                            }
+                        }
+                    }
+                ))
                     .toggleStyle(.goldSwitchSmall)
                     .labelsHidden()
-                    .onChange(of: isProtectionEnabled) {
-                        onToggleProtection()
-                    }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)

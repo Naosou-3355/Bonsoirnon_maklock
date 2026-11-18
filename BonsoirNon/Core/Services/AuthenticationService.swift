@@ -1,5 +1,5 @@
+import AppKit
 import LocalAuthentication
-import Foundation
 
 /// Handles Touch ID and password authentication.
 final class AuthenticationService {
@@ -124,6 +124,23 @@ final class AuthenticationService {
                 } else {
                     completion(.failure(self.mapLAError(error as NSError?)))
                 }
+            }
+        }
+    }
+
+    /// Ask for Touch ID (macOS password as fallback) before an action that weakens
+    /// protection, then bring Bonsoir, non back to the front: the system dialog takes
+    /// focus and macOS would otherwise leave our window behind other apps.
+    /// The Watch is deliberately not accepted here.
+    func confirmSensitiveAction(reason: String, completion: @escaping (Bool) -> Void) {
+        let window = NSApp.keyWindow
+        authenticateWithSystemFallback(reason: reason) { result in
+            NSApp.activate(ignoringOtherApps: true)
+            window?.makeKeyAndOrderFront(nil)
+            if case .success = result {
+                completion(true)
+            } else {
+                completion(false)
             }
         }
     }

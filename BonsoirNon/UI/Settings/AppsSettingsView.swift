@@ -109,11 +109,13 @@ struct AppsSettingsView: View {
     }
 
     /// Run `action` only after Touch ID (or the macOS password as fallback) succeeds.
-    /// The Watch is deliberately not accepted here: removing protection needs an explicit proof.
+    /// On failure, refresh the list so a switch the user flipped snaps back.
     private func requireAuthentication(reason: String, action: @escaping () -> Void) {
-        AuthenticationService.shared.authenticateWithSystemFallback(reason: reason) { result in
-            if case .success = result {
+        AuthenticationService.shared.confirmSensitiveAction(reason: reason) { success in
+            if success {
                 action()
+            } else {
+                manager.objectWillChange.send()
             }
         }
     }
