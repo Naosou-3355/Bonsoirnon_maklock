@@ -73,6 +73,26 @@ final class OverlayWindowService {
         hide()
     }
 
+    /// Close the overlay WITHOUT unlocking: the protected app is hidden and stays locked.
+    /// Used by the timeout failsafe so that waiting never grants access.
+    func dismissWithoutUnlock() {
+        stopTimeoutTimer()
+        AuthenticationService.shared.cancelAuthentication()
+
+        overlayWindows.forEach { $0.close() }
+        overlayWindows.removeAll()
+
+        if let bundleID = currentApp?.bundleIdentifier {
+            AppMonitorService.shared.clearAuthentication(for: bundleID)
+            NSWorkspace.shared.runningApplications
+                .first(where: { $0.bundleIdentifier == bundleID })?
+                .hide()
+        }
+
+        currentApp = nil
+        NSLog("[MakLock] Overlay timed out — protected app hidden, still locked")
+    }
+
     /// Whether an overlay is currently displayed.
     var isShowing: Bool {
         !overlayWindows.isEmpty
@@ -194,8 +214,8 @@ final class OverlayWindowService {
             : SafetyManager.overlayTimeout
 
         timeoutTimer = Timer.scheduledTimer(withTimeInterval: timeout, repeats: false) { [weak self] _ in
-            NSLog("[MakLock Safety] Overlay timeout reached (%.0fs) — auto-dismissing", timeout)
-            self?.hide()
+            NSLog("[MakLock Safety] Overlay timeout reached (%.0fs) — hiding app, staying locked", timeout)
+            self?.dismissWithoutUnlock()
         }
     }
 

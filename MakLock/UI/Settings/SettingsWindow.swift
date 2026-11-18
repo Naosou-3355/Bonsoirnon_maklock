@@ -35,7 +35,7 @@ final class SettingsWindowController {
             backing: .buffered,
             defer: false
         )
-        window.title = "MakLock Settings"
+        window.title = "Bonsoir, non Settings"
         window.contentViewController = hostingController
         window.isReleasedWhenClosed = false
         centerWindow(window, on: targetScreen)

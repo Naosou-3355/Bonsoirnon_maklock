@@ -8,9 +8,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         menuBarController.setup()
 
-        // Initialize Sparkle auto-updater
-        UpdateService.shared.start()
-
         // Request notification permission (for Watch unlock notifications)
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
 
@@ -33,7 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let watch = WatchProximityService.shared
             let watchCanUnlock = Defaults.shared.appSettings.useWatchUnlock
                 && watch.isWatchInRange
-                && (watch.isWatchUnlocked ?? true)
+                && (watch.isWatchUnlocked ?? false)
             if watchCanUnlock {
                 AppMonitorService.shared.markAuthenticated(app.bundleIdentifier)
                 WatchUnlockToast.shared.show(for: app.bundleIdentifier)
@@ -97,7 +94,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         WatchProximityService.shared.onWatchInRange = { [weak self] in
             guard OverlayWindowService.shared.isShowing else { return }
             // Only auto-unlock if Watch is on wrist (unlocked)
-            guard WatchProximityService.shared.isWatchUnlocked ?? true else { return }
+            guard WatchProximityService.shared.isWatchUnlocked ?? false else { return }
             let lockedBundleID = OverlayWindowService.shared.currentBundleIdentifier
             let lockedAppName = OverlayWindowService.shared.currentAppName
             OverlayWindowService.shared.hide()
@@ -189,7 +186,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         content.sound = nil
 
         let request = UNNotificationRequest(
-            identifier: "maklock-\(UUID().uuidString)",
+            identifier: "bonsoirnon-\(UUID().uuidString)",
             content: content,
             trigger: nil
         )

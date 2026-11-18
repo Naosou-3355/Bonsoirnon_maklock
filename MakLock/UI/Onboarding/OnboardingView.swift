@@ -11,7 +11,7 @@ struct OnboardingView: View {
     private let infoSteps: [Int: OnboardingInfoStep] = [
         0: OnboardingInfoStep(
             icon: "lock.shield.fill",
-            title: "Welcome to MakLock",
+            title: "Welcome to Bonsoir, non",
             description: "Lock any macOS app with Touch ID or password.\nYour apps, your privacy."
         ),
         // Step 1 = Panic Key (custom view with visual keycaps)
@@ -322,14 +322,14 @@ private struct FinalStep: View {
                 .foregroundColor(MakLockColors.textPrimary)
                 .multilineTextAlignment(.center)
 
-            Text("MakLock runs in your menu bar.\nProtected apps will require Touch ID — just put your finger on the sensor.")
+            Text("Bonsoir, non runs in your menu bar.\nProtected apps will require Touch ID — just put your finger on the sensor.")
                 .font(MakLockTypography.body)
                 .foregroundColor(MakLockColors.textSecondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 340)
 
             VStack(spacing: 12) {
-                Toggle("Launch MakLock at login", isOn: $launchAtLogin)
+                Toggle("Launch Bonsoir, non at login", isOn: $launchAtLogin)
                     .toggleStyle(.goldSwitch)
 
                 Text("You can also configure idle auto-lock\nand other options in Settings.")

@@ -10,7 +10,7 @@ struct GeneralSettingsView: View {
     var body: some View {
         Form {
             Section {
-                Toggle("Launch MakLock at login", isOn: $settings.launchAtLogin)
+                Toggle("Launch Bonsoir, non at login", isOn: $settings.launchAtLogin)
                     .toggleStyle(.goldSwitch)
 
                 Toggle("Lock apps when Mac sleeps", isOn: $settings.lockOnSleep)
@@ -76,14 +76,10 @@ struct GeneralSettingsView: View {
             }
 
             Section {
-                Button("Check for Updates…") {
-                    UpdateService.shared.updater.checkForUpdates()
-                }
-
                 HStack(spacing: 8) {
-                    Text("MakLock \(version) (\(build))  ·  Made by MakMak")
+                    Text("Bonsoir, non \(version) (\(build))")
                         .foregroundColor(MakLockColors.textSecondary)
-                    Link(destination: URL(string: "https://github.com/dutkiewiczmaciej/MakLock")!) {
+                    Link(destination: URL(string: "https://github.com/Naosou-3355/Bonsoirnon_maklock")!) {
                         HStack(spacing: 3) {
                             Image(systemName: "arrow.up.right.square")
                             Text("GitHub")

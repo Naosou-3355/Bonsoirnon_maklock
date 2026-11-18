@@ -93,7 +93,7 @@ final class MenuBarController {
             symbolName = "lock.fill"
         }
 
-        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "MakLock")
+        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "Bonsoir, non")
 
         // Add a small badge dot for locked state
         if iconState == .locked, let baseImage = image {
@@ -116,5 +116,5 @@ final class MenuBarController {
 // MARK: - Notification Names
 
 extension Notification.Name {
-    static let openSettings = Notification.Name("com.makmak.MakLock.openSettings")
+    static let openSettings = Notification.Name("com.bonsoirnon.app.openSettings")
 }

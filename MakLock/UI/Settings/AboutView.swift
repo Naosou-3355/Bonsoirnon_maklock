@@ -13,7 +13,7 @@ struct AboutView: View {
                 .frame(width: 80, height: 80)
 
             // App name
-            Text("MakLock")
+            Text("Bonsoir, non")
                 .font(MakLockTypography.largeTitle)
 
             // Version
@@ -32,7 +32,7 @@ struct AboutView: View {
 
             // Credits
             VStack(spacing: 4) {
-                Text("Made by MakMak")
+                Text("Based on MakLock by Maciej Dutkiewicz")
                     .font(MakLockTypography.body)
                 Text("Free and open source under MIT License")
                     .font(MakLockTypography.caption)
@@ -40,11 +40,11 @@ struct AboutView: View {
             }
 
             // GitHub link
-            Link(destination: URL(string: "https://github.com/dutkiewiczmaciej/maklock")!) {
+            Link(destination: URL(string: "https://github.com/Naosou-3355/Bonsoirnon_maklock")!) {
                 HStack(spacing: 4) {
                     Image(systemName: "link")
                         .font(.system(size: 11))
-                    Text("github.com/dutkiewiczmaciej/maklock")
+                    Text("github.com/Naosou-3355/Bonsoirnon_maklock")
                         .font(MakLockTypography.caption)
                 }
             }

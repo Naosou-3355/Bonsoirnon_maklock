@@ -5,7 +5,7 @@ import AppKit
 /// Manages safety mechanisms to prevent the user from getting locked out.
 ///
 /// Safety features:
-/// - Panic key (Cmd+Option+Shift+Control+U) dismisses all overlays instantly
+/// - Panic key (Cmd+Option+Shift+Control+U) dismisses all overlays instantly (DEBUG builds only)
 /// - System blacklist prevents locking Terminal, Xcode, and other dev tools
 /// - Overlay timeout (60s) auto-dismisses stuck overlays
 /// - Dev mode (DEBUG only) adds Skip button and 10s auto-dismiss
@@ -49,13 +49,16 @@ final class SafetyManager {
         "com.jetbrains.intellij",
 
         // MakLock itself
-        "com.makmak.MakLock",
+        "com.bonsoirnon.app",
     ]
 
     private var panicHotKey: HotKey?
 
     private init() {
+        // The panic key bypasses authentication, so it must never ship in Release builds.
+        #if DEBUG
         setupPanicKey()
+        #endif
     }
 
     // MARK: - Panic Key

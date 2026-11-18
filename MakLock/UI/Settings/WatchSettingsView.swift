@@ -107,7 +107,7 @@ struct WatchSettingsView: View {
             }
 
             Section("How it works") {
-                Text("When your Apple Watch is nearby, MakLock can automatically unlock protected apps without requiring Touch ID or a password. If the Watch moves out of range, apps will be locked again.")
+                Text("When your Apple Watch is nearby, Bonsoir, non can automatically unlock protected apps without requiring Touch ID or a password. If the Watch moves out of range, apps will be locked again.")
                     .font(MakLockTypography.caption)
                     .foregroundColor(.secondary)
             }
@@ -148,7 +148,7 @@ struct WatchSettingsView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Bluetooth Permission Required")
                         .font(MakLockTypography.body)
-                    Text("MakLock needs Bluetooth access to detect your Apple Watch. Grant permission in System Settings → Privacy & Security → Bluetooth.")
+                    Text("Bonsoir, non needs Bluetooth access to detect your Apple Watch. Grant permission in System Settings → Privacy & Security → Bluetooth.")
                         .font(MakLockTypography.caption)
                         .foregroundColor(.secondary)
                 }

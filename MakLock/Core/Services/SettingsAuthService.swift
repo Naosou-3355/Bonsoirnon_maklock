@@ -16,7 +16,7 @@ final class SettingsAuthService {
         let watch = WatchProximityService.shared
         return settings.useWatchUnlock
             && watch.isWatchInRange
-            && (watch.isWatchUnlocked ?? true)
+            && (watch.isWatchUnlocked ?? false)
     }
 
     /// Whether no authentication method is available (safety valve).
@@ -54,7 +54,7 @@ final class SettingsAuthService {
         }
 
         AuthenticationService.shared.authenticateWithSystemFallback(
-            reason: "Access MakLock Settings"
+            reason: "Access Bonsoir, non Settings"
         ) { result in
             switch result {
             case .success:

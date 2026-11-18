@@ -15,7 +15,7 @@ struct MenuBarView: View {
                 Image(systemName: "lock.fill")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(MakLockColors.gold)
-                Text("MakLock")
+                Text("Bonsoir, non")
                     .font(MakLockTypography.headline)
                 Spacer()
             }
@@ -66,14 +66,14 @@ struct MenuBarView: View {
                 onSettingsClicked()
             }
 
-            MenuBarButton(title: "About MakLock", icon: "info.circle") {
+            MenuBarButton(title: "About Bonsoir, non", icon: "info.circle") {
                 showAboutWindow()
             }
 
             Divider()
                 .padding(.horizontal, 8)
 
-            MenuBarButton(title: "Quit MakLock", icon: "power") {
+            MenuBarButton(title: "Quit Bonsoir, non", icon: "power") {
                 onQuitClicked()
             }
 
@@ -90,7 +90,7 @@ struct MenuBarView: View {
             backing: .buffered,
             defer: false
         )
-        window.title = "About MakLock"
+        window.title = "About Bonsoir, non"
         window.contentView = NSHostingView(rootView: AboutView())
         window.isReleasedWhenClosed = true
         window.center()

@@ -7,7 +7,7 @@ DerivedData/
 
 # Swift Package Manager
 .build/
-Package.resolved
+# Package.resolved is committed so dependency versions are pinned (OpenSSF Scorecard)
 
 # macOS
 .DS_Store

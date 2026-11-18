@@ -2,14 +2,14 @@ import AppKit
 import CoreBluetooth
 import os.log
 
-private let logger = Logger(subsystem: "com.makmak.MakLock", category: "Watch")
+private let logger = Logger(subsystem: "com.bonsoirnon.app", category: "Watch")
 
 private func watchLog(_ message: String) {
     logger.info("\(message, privacy: .public)")
     NSLog("[MakLock-Watch] %@", message)
     #if DEBUG
     let line = "[\(Date())] \(message)\n"
-    let path = "/tmp/maklock-watch.log"
+    let path = "/tmp/bonsoirnon-watch.log"
     if let handle = FileHandle(forWritingAtPath: path) {
         handle.seekToEndOfFile()
         handle.write(line.data(using: .utf8)!)
@@ -44,7 +44,7 @@ final class WatchProximityService: NSObject, ObservableObject {
     @Published private(set) var isWatchInRange = false
 
     /// Whether the Watch is unlocked (on wrist) based on Continuity Nearby Info.
-    /// `nil` means we haven't received lock state data yet (assume unlocked for backward compat).
+    /// `nil` means we haven't received lock state data yet (treated as locked: no auto-unlock).
     @Published private(set) var isWatchUnlocked: Bool?
 
     /// Whether BLE scanning is active.
@@ -435,9 +435,7 @@ extension WatchProximityService: CBCentralManagerDelegate {
 
         // Don't immediately mark out of range — scan-based RSSI will continue
         // providing proximity data. Only fire out-of-range if scan RSSI also drops.
-        // Keep last known lock state — clearing to nil would default to "unlocked"
-        // via (isWatchUnlocked ?? true) in AppDelegate, which is less safe than
-        // keeping the last known value.
+        // Keep last known lock state (nil is treated as locked by callers).
 
         // Retry connection with exponential backoff
         reconnectAttempts = 0 // Fresh disconnect, start backoff from 1s

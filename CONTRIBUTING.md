@@ -1,6 +1,6 @@
-# Contributing to MakLock
+# Contributing to Bonsoir, non
 
-Thanks for your interest in contributing to MakLock! Here's how to get started.
+Thanks for your interest in contributing to Bonsoir, non! Here's how to get started.
 
 ## Development Setup
 
@@ -13,8 +13,8 @@ Thanks for your interest in contributing to MakLock! Here's how to get started.
 ### Building from Source
 
 ```bash
-git clone https://github.com/dutkiewiczmaciej/maklock.git
-cd maklock
+git clone https://github.com/Naosou-3355/Bonsoirnon_maklock.git
+cd Bonsoirnon_maklock
 open MakLock.xcodeproj
 ```
 
@@ -46,14 +46,14 @@ MakLock/
 
 ## Safety Protocol
 
-MakLock includes safety mechanisms to prevent locking yourself out during development:
+Bonsoir, non includes safety mechanisms to prevent locking yourself out during development:
 
-- **Panic key:** `Cmd+Option+Shift+Control+U` dismisses all overlays instantly
+- **Panic key (DEBUG only):** `Cmd+Option+Shift+Control+U` dismisses all overlays instantly
 - **System blacklist:** Terminal, Xcode, Activity Monitor, and other dev tools can never be locked
-- **Dev mode:** In DEBUG builds, overlays auto-dismiss after 10 seconds and include a Skip button
-- **Timeout failsafe:** Overlays auto-dismiss after 60 seconds without interaction
+- **Dev mode:** In DEBUG builds, overlays auto-dismiss after 25 seconds and include a Skip button
+- **Timeout failsafe:** After 60 seconds the overlay closes and hides the protected app, which stays locked
 
-**Always test the panic key before working on overlay code.**
+**Always test the panic key in a Debug build before working on overlay code.**
 
 ## Submitting Changes
 
@@ -65,7 +65,7 @@ MakLock includes safety mechanisms to prevent locking yourself out during develo
 
 ## Reporting Issues
 
-Use [GitHub Issues](https://github.com/dutkiewiczmaciej/maklock/issues) with the provided templates for bug reports and feature requests.
+Use [GitHub Issues](https://github.com/Naosou-3355/Bonsoirnon_maklock/issues) with the provided templates for bug reports and feature requests.
 
 ## License
 

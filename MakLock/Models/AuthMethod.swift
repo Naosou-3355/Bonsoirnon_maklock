@@ -1,6 +1,6 @@
 import Foundation
 
-/// Authentication methods supported by MakLock.
+/// Authentication methods supported by Bonsoir, non.
 enum AuthMethod: String, Codable, CaseIterable {
     /// Touch ID biometric authentication.
     case touchID
@@ -23,6 +23,7 @@ enum AuthError: Error, LocalizedError {
     case biometryLockout
     case wrongPassword
     case noPasswordSet
+    case tooManyAttempts(retryAfter: Int)
     case systemError(String)
 
     var errorDescription: String? {
@@ -37,6 +38,8 @@ enum AuthError: Error, LocalizedError {
             return "Incorrect password. Please try again."
         case .noPasswordSet:
             return "No backup password has been set. Go to Settings → Security."
+        case .tooManyAttempts(let seconds):
+            return "Too many attempts. Try again in \(seconds) s."
         case .systemError(let message):
             return message
         }

@@ -57,17 +57,40 @@ final class AuthenticationService {
         isAuthenticating = false
     }
 
-    /// Verify the backup password.
+    /// Failed password attempts since the last success.
+    private var failedPasswordAttempts = 0
+
+    /// Password entry is refused until this date after too many failures.
+    private var passwordLockedUntil: Date?
+
+    /// Free attempts before a lockout starts.
+    private static let freePasswordAttempts = 5
+
+    /// Verify the backup password, with an escalating lockout after repeated failures
+    /// (30 s after 5 failures, doubling each time, capped at 15 min).
     func authenticateWithPassword(_ password: String) -> AuthResult {
         guard KeychainManager.shared.hasPassword() else {
             return .failure(.noPasswordSet)
         }
 
-        if KeychainManager.shared.verifyPassword(password) {
-            return .success
-        } else {
-            return .failure(.wrongPassword)
+        if let until = passwordLockedUntil, until > Date() {
+            return .failure(.tooManyAttempts(retryAfter: Int(until.timeIntervalSinceNow.rounded(.up))))
         }
+
+        if KeychainManager.shared.verifyPassword(password) {
+            failedPasswordAttempts = 0
+            passwordLockedUntil = nil
+            return .success
+        }
+
+        failedPasswordAttempts += 1
+        let excess = failedPasswordAttempts - Self.freePasswordAttempts
+        if excess >= 0 {
+            let delay = min(30 * pow(2, Double(excess)), 15 * 60)
+            passwordLockedUntil = Date().addingTimeInterval(delay)
+            return .failure(.tooManyAttempts(retryAfter: Int(delay)))
+        }
+        return .failure(.wrongPassword)
     }
 
     /// Authenticate with Touch ID, falling back to macOS login password.
