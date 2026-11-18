@@ -117,6 +117,19 @@ private struct InfoStepView: View {
 
 private struct PanicKeyStep: View {
     var body: some View {
+        if SafetyManager.isDevMode {
+            panicKeyContent
+        } else {
+            InfoStepView(step: OnboardingInfoStep(
+                icon: "exclamationmark.triangle.fill",
+                title: "If You Get Stuck",
+                description: "The lock screen closes by itself after 60 seconds and the app stays hidden and locked.\n\nTerminal, Finder, Activity Monitor and System Settings can never be locked, so you can always quit Bonsoir, non from there."
+            ))
+        }
+    }
+
+    /// Debug builds only: the panic key does not exist in Release.
+    private var panicKeyContent: some View {
         VStack(spacing: 20) {
             Spacer()
 
