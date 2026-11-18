@@ -95,6 +95,53 @@ final class KeychainManager {
         return status == errSecSuccess || status == errSecItemNotFound
     }
 
+    // MARK: - Generic secure storage
+
+    /// Read a data blob stored under `account` (nil if absent).
+    func data(forAccount account: String) -> Data? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        var result: AnyObject?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess else { return nil }
+        return result as? Data
+    }
+
+    /// Store a data blob under `account`, replacing any previous value.
+    @discardableResult
+    func setData(_ data: Data, forAccount account: String) -> Bool {
+        let match: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account
+        ]
+        let update: [String: Any] = [kSecValueData as String: data]
+        let status = SecItemUpdate(match as CFDictionary, update as CFDictionary)
+        if status == errSecSuccess { return true }
+        guard status == errSecItemNotFound else { return false }
+
+        var add = match
+        add[kSecValueData as String] = data
+        add[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        return SecItemAdd(add as CFDictionary, nil) == errSecSuccess
+    }
+
+    /// Remove the blob stored under `account`.
+    @discardableResult
+    func removeData(forAccount account: String) -> Bool {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account
+        ]
+        let status = SecItemDelete(query as CFDictionary)
+        return status == errSecSuccess || status == errSecItemNotFound
+    }
+
     // MARK: - Private
 
     private static func deriveHash(password: String, salt: Data, iterations: UInt32) -> Data? {

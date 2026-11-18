@@ -57,37 +57,45 @@ final class AuthenticationService {
         isAuthenticating = false
     }
 
-    /// Failed password attempts since the last success.
-    private var failedPasswordAttempts = 0
+    /// Keychain account holding the lockout state (survives app restarts).
+    private static let lockoutAccount = "password-lockout"
 
-    /// Password entry is refused until this date after too many failures.
-    private var passwordLockedUntil: Date?
-
-    /// Free attempts before a lockout starts.
-    private static let freePasswordAttempts = 5
+    private var lockout: PasswordLockout {
+        get {
+            guard let data = KeychainManager.shared.data(forAccount: Self.lockoutAccount),
+                  let value = try? JSONDecoder().decode(PasswordLockout.self, from: data)
+            else { return PasswordLockout() }
+            return value
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue) {
+                KeychainManager.shared.setData(data, forAccount: Self.lockoutAccount)
+            }
+        }
+    }
 
     /// Verify the backup password, with an escalating lockout after repeated failures
-    /// (30 s after 5 failures, doubling each time, capped at 15 min).
+    /// (see `PasswordLockout`). The lockout is stored in the Keychain, so quitting
+    /// and relaunching Bonsoir, non does not reset it.
     func authenticateWithPassword(_ password: String) -> AuthResult {
         guard KeychainManager.shared.hasPassword() else {
             return .failure(.noPasswordSet)
         }
 
-        if let until = passwordLockedUntil, until > Date() {
-            return .failure(.tooManyAttempts(retryAfter: Int(until.timeIntervalSinceNow.rounded(.up))))
+        var state = lockout
+        if let remaining = state.secondsRemaining() {
+            return .failure(.tooManyAttempts(retryAfter: remaining))
         }
 
         if KeychainManager.shared.verifyPassword(password) {
-            failedPasswordAttempts = 0
-            passwordLockedUntil = nil
+            state.recordSuccess()
+            lockout = state
             return .success
         }
 
-        failedPasswordAttempts += 1
-        let excess = failedPasswordAttempts - Self.freePasswordAttempts
-        if excess >= 0 {
-            let delay = min(30 * pow(2, Double(excess)), 15 * 60)
-            passwordLockedUntil = Date().addingTimeInterval(delay)
+        let delay = state.recordFailure()
+        lockout = state
+        if let delay {
             return .failure(.tooManyAttempts(retryAfter: Int(delay)))
         }
         return .failure(.wrongPassword)

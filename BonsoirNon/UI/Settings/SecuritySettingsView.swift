@@ -135,13 +135,20 @@ struct SecuritySettingsView: View {
             return
         }
 
-        let saved = KeychainManager.shared.savePassword(newPassword)
-        if saved {
-            Defaults.shared.isBackupPasswordSet = true
-            hasBackupPassword = true
-            showPasswordSheet = false
-        } else {
-            passwordError = "Failed to save password. Please try again."
+        // A new backup password is a new way to unlock every app: prove it's you first.
+        let password = newPassword
+        AuthenticationService.shared.confirmSensitiveAction(reason: "Change the Bonsoir, non backup password") { success in
+            guard success else {
+                passwordError = "Authentication required to change the password."
+                return
+            }
+            if KeychainManager.shared.savePassword(password) {
+                Defaults.shared.isBackupPasswordSet = true
+                hasBackupPassword = true
+                showPasswordSheet = false
+            } else {
+                passwordError = "Failed to save password. Please try again."
+            }
         }
     }
 

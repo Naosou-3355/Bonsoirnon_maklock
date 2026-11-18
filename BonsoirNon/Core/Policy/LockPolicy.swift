@@ -71,3 +71,38 @@ struct ProximityFilter {
         belowSince = nil
     }
 }
+
+// MARK: - Password lockout
+
+/// Escalating lockout after repeated wrong backup passwords:
+/// 5 free attempts, then 30 s, doubling each time, capped at 15 min.
+/// Codable so it can be persisted: quitting the app must not reset it.
+struct PasswordLockout: Codable, Equatable {
+    static let freeAttempts = 5
+    static let baseDelay: TimeInterval = 30
+    static let maxDelay: TimeInterval = 15 * 60
+
+    private(set) var failures = 0
+    private(set) var lockedUntil: Date?
+
+    /// Seconds left before a new attempt is allowed, or nil if not locked.
+    func secondsRemaining(at now: Date = Date()) -> Int? {
+        guard let until = lockedUntil, until > now else { return nil }
+        return Int(until.timeIntervalSince(now).rounded(.up))
+    }
+
+    /// Record a wrong password. Returns the lockout delay if one starts now.
+    mutating func recordFailure(at now: Date = Date()) -> TimeInterval? {
+        failures += 1
+        let excess = failures - Self.freeAttempts
+        guard excess >= 0 else { return nil }
+        let delay = min(Self.baseDelay * pow(2, Double(excess)), Self.maxDelay)
+        lockedUntil = now.addingTimeInterval(delay)
+        return delay
+    }
+
+    mutating func recordSuccess() {
+        failures = 0
+        lockedUntil = nil
+    }
+}
