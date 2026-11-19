@@ -69,15 +69,37 @@ struct WatchSettingsView: View {
                         HStack {
                             ProgressView()
                                 .controlSize(.small)
-                            Text("Searching for Apple Watch...")
+                            Text("Recherche des montres à proximité…")
                                 .font(BonsoirNonTypography.body)
                                 .foregroundColor(.secondary)
                         }
                         .padding(.vertical, 4)
 
-                        Text("Make sure your Apple Watch is unlocked, on your wrist, and nearby.")
+                        Text("Mets ta montre au poignet, déverrouillée, tout près du Mac, puis choisis-la. La plus proche est en haut.")
                             .font(BonsoirNonTypography.caption)
                             .foregroundColor(.secondary)
+
+                        ForEach(watchService.candidates) { candidate in
+                            HStack {
+                                Image(systemName: "applewatch")
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(candidate.name)
+                                        .font(BonsoirNonTypography.body)
+                                    Text("Signal : \(candidate.rssi) dBm")
+                                        .font(BonsoirNonTypography.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                Button("C'est ma montre") {
+                                    // A paired Watch can unlock every app: prove it's you.
+                                    AuthenticationService.shared.confirmSensitiveAction(
+                                        reason: "Appairer « \(candidate.name) » pour déverrouiller tes apps"
+                                    ) { success in
+                                        if success { watchService.pair(with: candidate.id) }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 

@@ -77,16 +77,32 @@ final class WatchProximityService: NSObject, ObservableObject {
         case unsupported
     }
 
-    /// The paired Watch peripheral identifier (persisted).
-    @Published var pairedWatchIdentifier: UUID? {
+    /// The paired Watch peripheral identifier. Stored in the Keychain: in
+    /// UserDefaults, anyone could pair their own Watch with `defaults write`.
+    @Published private(set) var pairedWatchIdentifier: UUID? {
         didSet {
             if let id = pairedWatchIdentifier {
-                UserDefaults.standard.set(id.uuidString, forKey: "BonsoirNon.pairedWatchID")
+                KeychainManager.shared.setData(Data(id.uuidString.utf8), forAccount: Self.pairedWatchAccount)
             } else {
-                UserDefaults.standard.removeObject(forKey: "BonsoirNon.pairedWatchID")
+                KeychainManager.shared.removeData(forAccount: Self.pairedWatchAccount)
             }
         }
     }
+
+    private static let pairedWatchAccount = "paired-watch"
+    private static let legacyPairedWatchKey = "BonsoirNon.pairedWatchID"
+
+    /// A Watch seen nearby while none is paired, offered in Settings.
+    struct Candidate: Identifiable, Equatable {
+        let id: UUID
+        let name: String
+        var rssi: Int
+        var lastSeen: Date
+    }
+
+    /// Watches seen nearby, for the user to pick theirs (no automatic pairing:
+    /// the first "watch" around could be someone else's).
+    @Published private(set) var candidates: [Candidate] = []
 
     /// RSSI threshold: values below this are considered "out of range".
     /// Default: -70 dBm (roughly 2-3 meters).
@@ -117,11 +133,15 @@ final class WatchProximityService: NSObject, ObservableObject {
     private override init() {
         super.init()
 
-        // Restore paired Watch ID
-        if let stored = UserDefaults.standard.string(forKey: "BonsoirNon.pairedWatchID"),
-           let uuid = UUID(uuidString: stored) {
+        // Restore paired Watch ID (Keychain; migrate once from UserDefaults).
+        if let data = KeychainManager.shared.data(forAccount: Self.pairedWatchAccount),
+           let uuid = UUID(uuidString: String(decoding: data, as: UTF8.self)) {
+            pairedWatchIdentifier = uuid
+        } else if let stored = UserDefaults.standard.string(forKey: Self.legacyPairedWatchKey),
+                  let uuid = UUID(uuidString: stored) {
             pairedWatchIdentifier = uuid
         }
+        UserDefaults.standard.removeObject(forKey: Self.legacyPairedWatchKey)
 
         // Restore RSSI threshold from settings
         rssiThreshold = Defaults.shared.appSettings.watchRssiThreshold
@@ -163,7 +183,19 @@ final class WatchProximityService: NSObject, ObservableObject {
         stopScanning()
         pairedWatchIdentifier = nil
         pairedPeripheral = nil
+        candidates.removeAll()
         watchLog("Watch unpaired")
+    }
+
+    /// Pair with the Watch the user picked in Settings (after Touch ID).
+    func pair(with id: UUID) {
+        pairedWatchIdentifier = id
+        candidates.removeAll()
+        proximity.reset()
+        isWatchInRange = false
+        isWatchUnlocked = nil
+        watchLog("Paired with Watch \(id.uuidString) (picked by the user)")
+        attemptReconnect()
     }
 
     // MARK: - Private
@@ -399,10 +431,10 @@ extension WatchProximityService: CBCentralManagerDelegate {
         // --- Watch pairing and connection ---
         guard let name, name.localizedCaseInsensitiveContains("watch") else { return }
 
-        // If no Watch is paired, pair with the first one found
+        // No Watch paired yet: list it so the user can pick theirs in Settings.
         if pairedWatchIdentifier == nil {
-            pairedWatchIdentifier = peripheral.identifier
-            watchLog("Auto-paired with Watch: \(name) (ID: \(peripheral.identifier.uuidString))")
+            updateCandidate(id: peripheral.identifier, name: name, rssi: RSSI.intValue)
+            return
         }
 
         guard peripheral.identifier == pairedWatchIdentifier else { return }
@@ -414,6 +446,22 @@ extension WatchProximityService: CBCentralManagerDelegate {
         peripheral.delegate = self
         central.connect(peripheral)
         watchLog("Connecting to Watch: \(name)")
+    }
+
+    /// Add or refresh a nearby Watch; publish only meaningful changes (scan
+    /// callbacks arrive many times per second).
+    private func updateCandidate(id: UUID, name: String, rssi: Int) {
+        guard rssi != 127 else { return }
+        let now = Date()
+        candidates.removeAll { now.timeIntervalSince($0.lastSeen) > 30 }
+        if let i = candidates.firstIndex(where: { $0.id == id }) {
+            guard abs(candidates[i].rssi - rssi) >= 5 || now.timeIntervalSince(candidates[i].lastSeen) > 3 else { return }
+            candidates[i].rssi = rssi
+            candidates[i].lastSeen = now
+        } else {
+            candidates.append(Candidate(id: id, name: name, rssi: rssi, lastSeen: now))
+        }
+        candidates.sort { $0.rssi > $1.rssi }
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
