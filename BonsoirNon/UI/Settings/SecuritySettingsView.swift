@@ -10,20 +10,48 @@ struct SecuritySettingsView: View {
     @State private var passwordError: String?
     @State private var keyboardGuardTrusted = KeyboardGuard.shared.isTrusted
 
+    /// Shorter delay: applied at once. Longer delay or "never": needs Touch ID.
+    private var relockDelayBinding: Binding<Int> {
+        Binding(
+            get: { settings.relockDelay },
+            set: { newValue in
+                let old = settings.relockDelay
+                guard RelockDelay.isWeaker(newValue, than: old) else {
+                    settings.relockDelay = newValue
+                    Defaults.shared.appSettings = settings
+                    return
+                }
+                AuthenticationService.shared.confirmSensitiveAction(reason: "Let unlocked apps stay open longer") { success in
+                    guard success else { return }
+                    settings.relockDelay = newValue
+                    Defaults.shared.appSettings = settings
+                }
+            }
+        )
+    }
+
+    static func label(forRelockDelay seconds: Int) -> String {
+        switch seconds {
+        case 0: return "Immediately"
+        case RelockDelay.never: return "Never (only on quit, sleep, idle)"
+        case let s where s < 3600: return "After \(s / 60) min"
+        default: return "After \(seconds / 3600) h"
+        }
+    }
+
     var body: some View {
         Form {
             Section {
-                Toggle("Require authentication on app launch", isOn: $settings.requireAuthOnLaunch)
-                    .toggleStyle(.goldSwitch)
-                    .onChange(of: settings.requireAuthOnLaunch) {
-                        Defaults.shared.appSettings = settings
+                // Protected apps always ask when they open; this sets when they ask
+                // again after you leave them.
+                Picker("Re-lock after leaving an app", selection: relockDelayBinding) {
+                    ForEach(RelockDelay.choices, id: \.self) { seconds in
+                        Text(Self.label(forRelockDelay: seconds)).tag(seconds)
                     }
-
-                Toggle("Require authentication on app switch", isOn: $settings.requireAuthOnActivate)
-                    .toggleStyle(.goldSwitch)
-                    .onChange(of: settings.requireAuthOnActivate) {
-                        Defaults.shared.appSettings = settings
-                    }
+                }
+                Text("Protected apps always ask when they open, and again after sleep, idle or when the Watch leaves.")
+                    .font(BonsoirNonTypography.caption)
+                    .foregroundColor(.secondary)
             }
 
             Section("Touch ID") {

@@ -8,6 +8,7 @@ swiftc -O \
   BonsoirNon/Core/Policy/LockPolicy.swift \
   BonsoirNon/Core/Storage/KeychainManager.swift \
   BonsoirNon/Models/AuthMethod.swift \
+  BonsoirNon/Models/AppSettings.swift \
   Tests/*.swift \
   -o "$OUT"
 "$OUT"

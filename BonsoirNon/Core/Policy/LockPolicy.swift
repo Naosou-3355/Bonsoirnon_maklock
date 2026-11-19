@@ -106,3 +106,39 @@ struct PasswordLockout: Codable, Equatable {
         lockedUntil = nil
     }
 }
+
+// MARK: - Re-lock after leaving an app
+
+enum RelockDelay {
+    /// Never re-lock just because you left the app (quit, sleep, idle, Watch still do).
+    static let never = -1
+    /// Choices offered in Settings (seconds).
+    static let choices = [0, 60, 300, 900, never]
+
+    /// Whether `new` is weaker (unlocks longer) than `old`.
+    static func isWeaker(_ new: Int, than old: Int) -> Bool {
+        if new == old { return false }
+        if new == never { return true }
+        if old == never { return false }
+        return new > old
+    }
+}
+
+/// Remembers when each unlocked app was left, to apply the re-lock delay.
+struct RelockTracker {
+    private var leftAt: [String: Date] = [:]
+
+    mutating func didLeave(_ bundleID: String, at now: Date = Date()) {
+        leftAt[bundleID] = now
+    }
+
+    /// Called when the app comes back to the front. True if it must ask again.
+    mutating func shouldRelockOnReturn(_ bundleID: String, delay: Int, at now: Date = Date()) -> Bool {
+        defer { leftAt[bundleID] = nil }
+        guard delay != RelockDelay.never, let left = leftAt[bundleID] else { return false }
+        return now.timeIntervalSince(left) >= TimeInterval(delay)
+    }
+
+    mutating func forget(_ bundleID: String) { leftAt[bundleID] = nil }
+    mutating func forgetAll() { leftAt.removeAll() }
+}
