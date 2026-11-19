@@ -8,6 +8,7 @@ struct SecuritySettingsView: View {
     @State private var newPassword = ""
     @State private var confirmPassword = ""
     @State private var passwordError: String?
+    @State private var keyboardGuardTrusted = KeyboardGuard.shared.isTrusted
 
     var body: some View {
         Form {
@@ -38,6 +39,26 @@ struct SecuritySettingsView: View {
                                 .font(BonsoirNonTypography.caption)
                                 .foregroundColor(.secondary)
                         }
+                    }
+                }
+            }
+
+            Section("Keyboard Blocking") {
+                HStack {
+                    Image(systemName: keyboardGuardTrusted ? "keyboard" : "exclamationmark.triangle.fill")
+                        .foregroundColor(keyboardGuardTrusted ? BonsoirNonColors.success : BonsoirNonColors.locked)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(keyboardGuardTrusted ? "Keystrokes to locked apps are blocked" : "Keyboard blocking is off")
+                            .font(BonsoirNonTypography.body)
+                        Text("Needs the Accessibility permission. Locked apps are hidden either way; this blocks typing as a safety net.")
+                            .font(BonsoirNonTypography.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                if !keyboardGuardTrusted {
+                    Button("Grant Accessibility Permission...") {
+                        KeyboardGuard.shared.requestPermission()
+                        KeyboardGuard.shared.openSystemSettings()
                     }
                 }
             }
@@ -76,7 +97,12 @@ struct SecuritySettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            keyboardGuardTrusted = KeyboardGuard.shared.isTrusted
+            KeyboardGuard.shared.startIfPossible()
+        }
         .onAppear {
+            keyboardGuardTrusted = KeyboardGuard.shared.isTrusted
             hasBackupPassword = KeychainManager.shared.hasPassword()
         }
         .sheet(isPresented: $showPasswordSheet) {

@@ -32,6 +32,7 @@ final class OverlayWindowService {
 
         createOverlayWindows(for: app)
         startTimeoutTimer()
+        KeyboardGuard.shared.startIfPossible()   // in case the permission was granted since launch
 
         // Hide the locked app while the overlay is up: its windows leave Mission
         // Control / App Exposé and it stops receiving keystrokes. Done before the

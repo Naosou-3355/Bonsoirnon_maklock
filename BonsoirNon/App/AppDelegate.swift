@@ -41,6 +41,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         menuBarController.setup()
 
+        // Block keystrokes to locked apps (needs Accessibility; asked once).
+        KeyboardGuard.shared.startIfPossible()
+        if !KeyboardGuard.shared.isTrusted,
+           !UserDefaults.standard.bool(forKey: "askedAccessibility"),
+           Defaults.shared.hasCompletedOnboarding {
+            UserDefaults.standard.set(true, forKey: "askedAccessibility")
+            KeyboardGuard.shared.requestPermission()
+        }
+
         // Request notification permission (for Watch unlock notifications)
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
 

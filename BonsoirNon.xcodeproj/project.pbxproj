@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A10000000000000000002022 /* KeyboardGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000002021 /* KeyboardGuard.swift */; };
 		A10000000000000000002012 /* KeepAliveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000002011 /* KeepAliveService.swift */; };
 		A10000000000000000002002 /* LockPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000002001 /* LockPolicy.swift */; };
 		3C36B23C6F719E84D10ECE91 /* AppInactivityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D8AAF1355AD0ACA8137F01D /* AppInactivityService.swift */; };
@@ -57,6 +58,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A10000000000000000002021 /* KeyboardGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardGuard.swift; sourceTree = "<group>"; };
 		A10000000000000000002011 /* KeepAliveService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeepAliveService.swift; sourceTree = "<group>"; };
 		A10000000000000000002001 /* LockPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockPolicy.swift; sourceTree = "<group>"; };
 		4D8AAF1355AD0ACA8137F01D /* AppInactivityService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppInactivityService.swift; sourceTree = "<group>"; };
@@ -189,6 +191,7 @@
 		A100000000000000000000C1 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A10000000000000000002021 /* KeyboardGuard.swift */,
 				A10000000000000000002011 /* KeepAliveService.swift */,
 				A10000000000000000000611 /* AppMonitorService.swift */,
 				A10000000000000000000813 /* OverlayWindowService.swift */,
@@ -394,6 +397,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000002022 /* KeyboardGuard.swift in Sources */,
 				A10000000000000000002012 /* KeepAliveService.swift in Sources */,
 				A10000000000000000002002 /* LockPolicy.swift in Sources */,
 				A10000000000000000000001 /* BonsoirNonApp.swift in Sources */,
