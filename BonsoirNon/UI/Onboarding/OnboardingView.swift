@@ -371,15 +371,7 @@ private struct FinalStep: View {
         settings.launchAtLogin = launchAtLogin
         Defaults.shared.appSettings = settings
 
-        do {
-            if launchAtLogin {
-                try SMAppService.mainApp.register()
-            } else {
-                try SMAppService.mainApp.unregister()
-            }
-        } catch {
-            NSLog("[BonsoirNon] Failed to set login item: %@", error.localizedDescription)
-        }
+        LaunchAtLogin.apply(launchAtLogin)
     }
 }
 

@@ -5,7 +5,40 @@ import UserNotifications
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let menuBarController = MenuBarController()
 
+    /// Set when quitting is legitimate: menu Quit (authenticated), logout, shutdown.
+    private static var terminationAuthorized = false
+
+    /// Quit for real (the only path the keep-alive agent does not undo).
+    static func terminateAuthorized() {
+        terminationAuthorized = true
+        NSApp.terminate(nil)
+    }
+
+    /// Refuse quit requests that don't come from our menu: Activity Monitor's
+    /// "Quit", `osascript -e 'quit app …'`, Cmd+Q. They exit cleanly, so the
+    /// keep-alive agent would not relaunch the app. Force Quit still works and
+    /// is relaunched by launchd.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        if Self.terminationAuthorized || SafetyManager.isDevMode {
+            return .terminateNow
+        }
+        NSLog("[BonsoirNon] Blocked a quit request that did not come from the menu")
+        return .terminateCancel
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Launched by hand while the launchd agent is in charge: let it run instead.
+        if KeepAliveService.shared.handOverIfNeeded() {
+            exit(0)
+        }
+
+        // Logout / restart / shutdown must not be blocked by applicationShouldTerminate.
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.willPowerOffNotification, object: nil, queue: .main
+        ) { _ in
+            Self.terminationAuthorized = true
+        }
+
         menuBarController.setup()
 
         // Request notification permission (for Watch unlock notifications)
@@ -51,13 +84,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             WatchProximityService.shared.startScanning()
         }
 
-        // Delay app monitoring slightly to give Watch time to connect on startup.
-        // Without this, protected running apps would trigger overlays before
-        // the Watch connection is established.
-        let monitorDelay: TimeInterval = Defaults.shared.appSettings.useWatchUnlock ? 8.0 : 0
-        DispatchQueue.main.asyncAfter(deadline: .now() + monitorDelay) {
-            AppMonitorService.shared.startMonitoring()
-        }
+        // Start monitoring right away: after a relaunch (Force Quit, crash), already
+        // open protected apps must be covered at once. If the Watch is on the wrist,
+        // it dismisses the overlay as soon as it connects (onWatchInRange).
+        AppMonitorService.shared.startMonitoring()
 
         // Start auto-close monitoring if any protected app has auto-close enabled
         if ProtectedAppsManager.shared.apps.contains(where: { $0.autoClose }) {

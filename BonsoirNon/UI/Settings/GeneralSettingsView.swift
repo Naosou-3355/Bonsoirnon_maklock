@@ -92,7 +92,17 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
-        .onChange(of: settings.launchAtLogin) { save() }
+        .onChange(of: settings.launchAtLogin) { _, enabled in
+            guard !enabled else { save(); return }
+            // Turning this off also turns off the automatic relaunch: prove it's you.
+            AuthenticationService.shared.confirmSensitiveAction(reason: "Stop launching Bonsoir, non automatically") { success in
+                if success {
+                    save()
+                } else {
+                    settings.launchAtLogin = true
+                }
+            }
+        }
         .onChange(of: settings.lockOnSleep) { save() }
         .onChange(of: settings.lockOnIdle) { save() }
     }
@@ -115,14 +125,6 @@ struct GeneralSettingsView: View {
     }
 
     private func updateLaunchAtLogin(enabled: Bool) {
-        do {
-            if enabled {
-                try SMAppService.mainApp.register()
-            } else {
-                try SMAppService.mainApp.unregister()
-            }
-        } catch {
-            NSLog("[BonsoirNon] Failed to update login item: %@", error.localizedDescription)
-        }
+        LaunchAtLogin.apply(enabled)
     }
 }

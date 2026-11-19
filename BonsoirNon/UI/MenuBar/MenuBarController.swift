@@ -49,7 +49,7 @@ final class MenuBarController {
                 NotificationCenter.default.post(name: .openSettings, object: screen)
             },
             onQuitClicked: {
-                NSApplication.shared.terminate(nil)
+                AppDelegate.terminateAuthorized()
             }
         ))
         self.popover = popover
