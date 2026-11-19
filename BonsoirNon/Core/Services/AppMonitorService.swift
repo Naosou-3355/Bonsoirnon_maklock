@@ -200,8 +200,13 @@ final class AppMonitorService: ObservableObject {
         // Skip if app is already authenticated in this session
         guard !authenticatedApps.contains(bundleID) else { return }
 
-        // Don't show overlay if one is already showing
-        guard !OverlayWindowService.shared.isShowing else { return }
+        // An overlay is already up (for this app or another one): keep this
+        // locked app hidden so it can't be used or read behind the overlay
+        // (e.g. brought back with Cmd+Tab). It gets its own prompt later.
+        if OverlayWindowService.shared.isShowing {
+            runningApp.hide()
+            return
+        }
 
         // Don't trigger if a prompt is already pending for this app
         guard !pendingLockBundleIDs.contains(bundleID) else { return }
