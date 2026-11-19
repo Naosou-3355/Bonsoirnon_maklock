@@ -37,3 +37,21 @@ func relockTests() {
         check(on?.isProtectionEnabled == true && on?.watchRssiThreshold == -70, "missing keys get defaults")
     }
 }
+
+func activityTests() {
+    suite("Journal: newest first, capped at 200") {
+        var h = ActivityHistory()
+        for i in 0..<250 {
+            h.append(ActivityEvent(date: Date(timeIntervalSince1970: Double(i)), kind: .wrongPassword, appName: "\(i)"))
+        }
+        check(h.events.count == 200, "capped")
+        check(h.events.first?.appName == "249", "newest first")
+        check(h.events.last?.appName == "50", "oldest dropped")
+        let back = try? JSONDecoder().decode(ActivityHistory.self, from: JSONEncoder().encode(h))
+        check(back == h, "round-trips")
+    }
+    suite("Journal: suspicious events") {
+        check(ActivityKind.wrongPassword.isSuspicious && ActivityKind.quitRefused.isSuspicious, "failures are suspicious")
+        check(!ActivityKind.unlockTouchID.isSuspicious, "normal unlock is not")
+    }
+}

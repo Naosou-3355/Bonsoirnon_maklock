@@ -50,8 +50,14 @@ struct PasswordInputView: View {
 
         switch result {
         case .success:
+            ActivityLog.shared.record(.unlockPassword, app: OverlayWindowService.shared.currentAppName)
             onSuccess()
         case .failure(let error):
+            if case .tooManyAttempts = error {
+                ActivityLog.shared.record(.passwordLockedOut, app: OverlayWindowService.shared.currentAppName)
+            } else {
+                ActivityLog.shared.record(.wrongPassword, app: OverlayWindowService.shared.currentAppName)
+            }
             errorMessage = error.localizedDescription
             password = ""
             triggerShake()

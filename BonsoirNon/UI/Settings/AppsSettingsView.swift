@@ -76,6 +76,7 @@ struct AppsSettingsView: View {
                             } else {
                                 // Turning protection off weakens security: authenticate first.
                                 requireAuthentication(reason: "Stop protecting \(app.name)") {
+                                    ActivityLog.shared.record(.appUnprotected, app: app.name)
                                     manager.toggleApp(app)
                                 }
                             }
@@ -86,6 +87,7 @@ struct AppsSettingsView: View {
 
                     Button(action: {
                         requireAuthentication(reason: "Remove \(app.name) from protected apps") {
+                            ActivityLog.shared.record(.appUnprotected, app: app.name)
                             manager.removeApp(app)
                         }
                     }) {
@@ -102,7 +104,10 @@ struct AppsSettingsView: View {
                 let appsToRemove = indexSet.map { manager.apps[$0] }
                 let names = appsToRemove.map(\.name).joined(separator: ", ")
                 requireAuthentication(reason: "Remove \(names) from protected apps") {
-                    appsToRemove.forEach { manager.removeApp($0) }
+                    appsToRemove.forEach {
+                        ActivityLog.shared.record(.appUnprotected, app: $0.name)
+                        manager.removeApp($0)
+                    }
                 }
             }
         }

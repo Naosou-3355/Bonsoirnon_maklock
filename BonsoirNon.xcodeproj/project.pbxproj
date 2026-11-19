@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A10000000000000000002042 /* ActivitySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000002041 /* ActivitySettingsView.swift */; };
+		A10000000000000000002032 /* ActivityLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000002031 /* ActivityLog.swift */; };
 		A10000000000000000002022 /* KeyboardGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000002021 /* KeyboardGuard.swift */; };
 		A10000000000000000002012 /* KeepAliveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000002011 /* KeepAliveService.swift */; };
 		A10000000000000000002002 /* LockPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000002001 /* LockPolicy.swift */; };
@@ -58,6 +60,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A10000000000000000002041 /* ActivitySettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitySettingsView.swift; sourceTree = "<group>"; };
+		A10000000000000000002031 /* ActivityLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLog.swift; sourceTree = "<group>"; };
 		A10000000000000000002021 /* KeyboardGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardGuard.swift; sourceTree = "<group>"; };
 		A10000000000000000002011 /* KeepAliveService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeepAliveService.swift; sourceTree = "<group>"; };
 		A10000000000000000002001 /* LockPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockPolicy.swift; sourceTree = "<group>"; };
@@ -191,6 +195,7 @@
 		A100000000000000000000C1 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A10000000000000000002031 /* ActivityLog.swift */,
 				A10000000000000000002021 /* KeyboardGuard.swift */,
 				A10000000000000000002011 /* KeepAliveService.swift */,
 				A10000000000000000000611 /* AppMonitorService.swift */,
@@ -271,6 +276,7 @@
 		A100000000000000000000D4 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				A10000000000000000002041 /* ActivitySettingsView.swift */,
 				A10000000000000000000511 /* SettingsWindow.swift */,
 				A10000000000000000000512 /* SettingsView.swift */,
 				A10000000000000000000513 /* GeneralSettingsView.swift */,
@@ -397,6 +403,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000002042 /* ActivitySettingsView.swift in Sources */,
+				A10000000000000000002032 /* ActivityLog.swift in Sources */,
 				A10000000000000000002022 /* KeyboardGuard.swift in Sources */,
 				A10000000000000000002012 /* KeepAliveService.swift in Sources */,
 				A10000000000000000002002 /* LockPolicy.swift in Sources */,

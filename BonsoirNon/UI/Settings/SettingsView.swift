@@ -23,6 +23,11 @@ struct SettingsView: View {
                 .tabItem {
                     Label("Watch", systemImage: "applewatch")
                 }
+
+            ActivitySettingsView()
+                .tabItem {
+                    Label("Journal", systemImage: "list.bullet.rectangle")
+                }
         }
         .frame(width: 520, height: 400)
     }

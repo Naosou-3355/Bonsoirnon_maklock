@@ -142,3 +142,45 @@ struct RelockTracker {
     mutating func forget(_ bundleID: String) { leftAt[bundleID] = nil }
     mutating func forgetAll() { leftAt.removeAll() }
 }
+
+// MARK: - Activity log
+
+/// What happened, for the activity log in Settings.
+enum ActivityKind: String, Codable, CaseIterable {
+    case unlockTouchID, unlockPassword, unlockWatch
+    case touchIDFailed, wrongPassword, passwordLockedOut, lockTimedOut
+    case protectionTurnedOff, appUnprotected, quitRefused, lockAllNow
+
+    /// Events worth a second look (someone may have tried to get in).
+    var isSuspicious: Bool {
+        switch self {
+        case .touchIDFailed, .wrongPassword, .passwordLockedOut, .lockTimedOut,
+             .protectionTurnedOff, .appUnprotected, .quitRefused:
+            return true
+        case .unlockTouchID, .unlockPassword, .unlockWatch, .lockAllNow:
+            return false
+        }
+    }
+}
+
+struct ActivityEvent: Codable, Equatable, Identifiable {
+    var id = UUID()
+    let date: Date
+    let kind: ActivityKind
+    let appName: String?
+}
+
+/// Newest-first list of events, capped so it never grows without bound.
+struct ActivityHistory: Codable, Equatable {
+    static let capacity = 200
+    private(set) var events: [ActivityEvent] = []
+
+    mutating func append(_ event: ActivityEvent) {
+        events.insert(event, at: 0)
+        if events.count > Self.capacity {
+            events.removeLast(events.count - Self.capacity)
+        }
+    }
+
+    mutating func clear() { events.removeAll() }
+}

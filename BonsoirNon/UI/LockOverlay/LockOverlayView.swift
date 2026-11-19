@@ -128,8 +128,10 @@ struct LockOverlayView: View {
 
             switch result {
             case .success:
+                ActivityLog.shared.record(.unlockTouchID, app: appName)
                 onDismiss()
             case .failure(let error):
+                ActivityLog.shared.record(.touchIDFailed, app: appName)
                 authState = .waitingForUser
                 errorMessage = error.localizedDescription
             case .cancelled:

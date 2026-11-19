@@ -87,6 +87,7 @@ final class OverlayWindowService {
 
         let lockedApp = currentApp
         currentApp = nil
+        ActivityLog.shared.record(.lockTimedOut, app: lockedApp?.name)
 
         if let lockedApp {
             let bundleID = lockedApp.bundleIdentifier

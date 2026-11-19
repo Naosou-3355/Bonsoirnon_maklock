@@ -27,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return .terminateNow
         }
         NSLog("[BonsoirNon] Blocked a quit request that did not come from the menu")
+        ActivityLog.shared.record(.quitRefused)
         return .terminateCancel
     }
 
@@ -86,6 +87,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 && WatchProximityService.shared.canAutoUnlock
             if watchCanUnlock {
                 AppMonitorService.shared.markAuthenticated(app.bundleIdentifier)
+                ActivityLog.shared.record(.unlockWatch, app: app.name)
                 WatchUnlockToast.shared.show(for: app.bundleIdentifier)
                 Self.sendWatchUnlockNotification(appName: app.name)
                 return
@@ -162,6 +164,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let lockedBundleID = OverlayWindowService.shared.currentBundleIdentifier
             let lockedAppName = OverlayWindowService.shared.currentAppName
             OverlayWindowService.shared.hide()
+            ActivityLog.shared.record(.unlockWatch, app: lockedAppName)
             WatchUnlockToast.shared.show(for: lockedBundleID)
             Self.sendWatchUnlockNotification(appName: lockedAppName ?? "app")
             self?.menuBarController.iconState = .active
@@ -219,6 +222,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         lockFrontmostProtectedApp()
         NSLog("[BonsoirNon] Lock All Now")
+        ActivityLog.shared.record(.lockAllNow)
     }
 
     /// Show the overlay for the frontmost app if it is protected and not unlocked.
