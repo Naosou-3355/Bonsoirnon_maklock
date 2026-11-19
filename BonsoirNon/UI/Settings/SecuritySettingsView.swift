@@ -33,9 +33,9 @@ struct SecuritySettingsView: View {
     static func label(forRelockDelay seconds: Int) -> String {
         switch seconds {
         case 0: return "Immédiatement"
-        case RelockDelay.never: return "Jamais (seulement à la fermeture, veille, inactivité)"
-        case let s where s < 3600: return "Après \(s / 60) min"
-        default: return "Après \(seconds / 3600) h"
+        case RelockDelay.never: return "Jamais"
+        case let s where s < 3600: return "Au bout de \(s / 60) min"
+        default: return "Au bout de \(seconds / 3600) h"
         }
     }
 
@@ -44,12 +44,12 @@ struct SecuritySettingsView: View {
             Section {
                 // Protected apps always ask when they open; this sets when they ask
                 // again after you leave them.
-                Picker("Reverrouiller après avoir quitté une app", selection: relockDelayBinding) {
+                Picker("Quand tu passes à une autre app, reverrouiller", selection: relockDelayBinding) {
                     ForEach(RelockDelay.choices, id: \.self) { seconds in
                         Text(Self.label(forRelockDelay: seconds)).tag(seconds)
                     }
                 }
-                Text("Les apps protégées demandent toujours à l'ouverture, puis après veille, inactivité ou départ de la montre.")
+                Text("Une app protégée se verrouille toujours quand tu l'ouvres, quand tu la fermes, en veille, après inactivité ou quand ta montre s'éloigne. Ce réglage ajoute le cas où tu passes simplement à une autre app.")
                     .font(BonsoirNonTypography.caption)
                     .foregroundColor(.secondary)
             }
