@@ -52,7 +52,7 @@ final class SettingsAuthService {
         }
 
         AuthenticationService.shared.authenticateWithSystemFallback(
-            reason: "Access Bonsoir, non Settings"
+            reason: "Ouvrir les réglages de Bonsoir, non"
         ) { result in
             switch result {
             case .success:

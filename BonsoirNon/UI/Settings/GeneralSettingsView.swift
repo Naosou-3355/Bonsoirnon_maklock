@@ -10,20 +10,20 @@ struct GeneralSettingsView: View {
     var body: some View {
         Form {
             Section {
-                Toggle("Launch Bonsoir, non at login", isOn: $settings.launchAtLogin)
+                Toggle("Ouvrir Bonsoir, non à la connexion", isOn: $settings.launchAtLogin)
                     .toggleStyle(.goldSwitch)
 
-                Toggle("Lock apps when the screen locks or the Mac sleeps", isOn: $settings.lockOnSleep)
+                Toggle("Verrouiller quand l'écran se verrouille ou que le Mac se met en veille", isOn: $settings.lockOnSleep)
                     .toggleStyle(.goldSwitch)
             }
 
             Section {
-                Toggle("Lock apps after idle timeout", isOn: $settings.lockOnIdle)
+                Toggle("Verrouiller après inactivité", isOn: $settings.lockOnIdle)
                     .toggleStyle(.goldSwitch)
 
                 if settings.lockOnIdle {
                     HStack {
-                        Text("Timeout:")
+                        Text("Délai :")
                         Slider(
                             value: Binding(
                                 get: { Double(settings.idleTimeoutMinutes) },
@@ -50,7 +50,7 @@ struct GeneralSettingsView: View {
 
             Section {
                 HStack {
-                    Text("Auto-close timeout:")
+                    Text("Fermeture auto après :")
                     Slider(
                         value: Binding(
                             get: { Double(settings.inactiveCloseMinutes) },
@@ -70,7 +70,7 @@ struct GeneralSettingsView: View {
                         .monospacedDigit()
                 }
 
-                Text("Apps with the timer icon enabled will quit after this period of inactivity.")
+                Text("Les apps avec l'icône minuteur activée se ferment après cette durée d'inactivité.")
                     .font(BonsoirNonTypography.caption)
                     .foregroundColor(BonsoirNonColors.textSecondary)
             }
@@ -95,7 +95,7 @@ struct GeneralSettingsView: View {
         .onChange(of: settings.launchAtLogin) { _, enabled in
             guard !enabled else { save(); return }
             // Turning this off also turns off the automatic relaunch: prove it's you.
-            AuthenticationService.shared.confirmSensitiveAction(reason: "Stop launching Bonsoir, non automatically") { success in
+            AuthenticationService.shared.confirmSensitiveAction(reason: "Ne plus ouvrir Bonsoir, non automatiquement") { success in
                 if success {
                     save()
                 } else {

@@ -9,6 +9,6 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Bonsoir, non uses Bluetooth to detect your Apple Watch for proximity unlock.</string>
+	<string>Bonsoir, non utilise le Bluetooth pour détecter ton Apple Watch et déverrouiller tes apps quand elle est proche.</string>
 </dict>
 </plist>

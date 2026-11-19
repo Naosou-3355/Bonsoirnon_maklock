@@ -37,7 +37,7 @@ final class MenuBarController {
                 // Keep the popover open while the Touch ID dialog has focus.
                 popover?.behavior = .applicationDefined
                 AuthenticationService.shared.confirmSensitiveAction(
-                    reason: "Turn off Bonsoir, non protection"
+                    reason: "Couper la protection de Bonsoir, non"
                 ) { success in
                     popover?.behavior = .transient
                     completion(success)

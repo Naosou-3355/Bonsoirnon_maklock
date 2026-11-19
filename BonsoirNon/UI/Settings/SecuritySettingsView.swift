@@ -21,7 +21,7 @@ struct SecuritySettingsView: View {
                     Defaults.shared.appSettings = settings
                     return
                 }
-                AuthenticationService.shared.confirmSensitiveAction(reason: "Let unlocked apps stay open longer") { success in
+                AuthenticationService.shared.confirmSensitiveAction(reason: "Laisser les apps déverrouillées plus longtemps") { success in
                     guard success else { return }
                     settings.relockDelay = newValue
                     Defaults.shared.appSettings = settings
@@ -32,10 +32,10 @@ struct SecuritySettingsView: View {
 
     static func label(forRelockDelay seconds: Int) -> String {
         switch seconds {
-        case 0: return "Immediately"
-        case RelockDelay.never: return "Never (only on quit, sleep, idle)"
-        case let s where s < 3600: return "After \(s / 60) min"
-        default: return "After \(seconds / 3600) h"
+        case 0: return "Immédiatement"
+        case RelockDelay.never: return "Jamais (seulement à la fermeture, veille, inactivité)"
+        case let s where s < 3600: return "Après \(s / 60) min"
+        default: return "Après \(seconds / 3600) h"
         }
     }
 
@@ -44,12 +44,12 @@ struct SecuritySettingsView: View {
             Section {
                 // Protected apps always ask when they open; this sets when they ask
                 // again after you leave them.
-                Picker("Re-lock after leaving an app", selection: relockDelayBinding) {
+                Picker("Reverrouiller après avoir quitté une app", selection: relockDelayBinding) {
                     ForEach(RelockDelay.choices, id: \.self) { seconds in
                         Text(Self.label(forRelockDelay: seconds)).tag(seconds)
                     }
                 }
-                Text("Protected apps always ask when they open, and again after sleep, idle or when the Watch leaves.")
+                Text("Les apps protégées demandent toujours à l'ouverture, puis après veille, inactivité ou départ de la montre.")
                     .font(BonsoirNonTypography.caption)
                     .foregroundColor(.secondary)
             }
@@ -60,10 +60,10 @@ struct SecuritySettingsView: View {
                         .font(.system(size: 20))
                         .foregroundColor(AuthenticationService.shared.isTouchIDAvailable ? BonsoirNonColors.success : BonsoirNonColors.textSecondary)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(AuthenticationService.shared.isTouchIDAvailable ? "Touch ID Available" : "Touch ID Not Available")
+                        Text(AuthenticationService.shared.isTouchIDAvailable ? "Touch ID disponible" : "Touch ID indisponible")
                             .font(BonsoirNonTypography.body)
                         if !AuthenticationService.shared.isTouchIDAvailable {
-                            Text("Touch ID is not configured on this Mac. Use a backup password instead.")
+                            Text("Touch ID n'est pas configuré sur ce Mac. Utilise un mot de passe de secours.")
                                 .font(BonsoirNonTypography.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -71,36 +71,36 @@ struct SecuritySettingsView: View {
                 }
             }
 
-            Section("Keyboard Blocking") {
+            Section("Clavier") {
                 HStack {
                     Image(systemName: keyboardGuardTrusted ? "keyboard" : "exclamationmark.triangle.fill")
                         .foregroundColor(keyboardGuardTrusted ? BonsoirNonColors.success : BonsoirNonColors.locked)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(keyboardGuardTrusted ? "Keystrokes to locked apps are blocked" : "Keyboard blocking is off")
+                        Text(keyboardGuardTrusted ? "La frappe vers les apps verrouillées est bloquée" : "Blocage du clavier inactif")
                             .font(BonsoirNonTypography.body)
-                        Text("Needs the Accessibility permission. Locked apps are hidden either way; this blocks typing as a safety net.")
+                        Text("Nécessite l'autorisation Accessibilité. Les apps verrouillées sont masquées dans tous les cas ; ceci bloque la frappe en plus.")
                             .font(BonsoirNonTypography.caption)
                             .foregroundColor(.secondary)
                     }
                 }
                 if !keyboardGuardTrusted {
-                    Button("Grant Accessibility Permission...") {
+                    Button("Autoriser l'accessibilité…") {
                         KeyboardGuard.shared.requestPermission()
                         KeyboardGuard.shared.openSystemSettings()
                     }
                 }
             }
 
-            Section("Backup Password") {
+            Section("Mot de passe de secours") {
                 if hasBackupPassword {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(BonsoirNonColors.success)
-                        Text("Backup password is set")
+                        Text("Mot de passe de secours défini")
                             .font(BonsoirNonTypography.body)
                     }
 
-                    Button("Change Password...") {
+                    Button("Changer le mot de passe…") {
                         resetPasswordFields()
                         showPasswordSheet = true
                     }
@@ -108,15 +108,15 @@ struct SecuritySettingsView: View {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundColor(BonsoirNonColors.locked)
-                        Text("No backup password set")
+                        Text("Aucun mot de passe de secours")
                             .font(BonsoirNonTypography.body)
                     }
 
-                    Text("A backup password lets you unlock apps when Touch ID is unavailable.")
+                    Text("Le mot de passe de secours déverrouille les apps quand Touch ID n'est pas disponible.")
                         .font(BonsoirNonTypography.caption)
                         .foregroundColor(.secondary)
 
-                    Button("Set Password...") {
+                    Button("Définir un mot de passe…") {
                         resetPasswordFields()
                         showPasswordSheet = true
                     }
@@ -142,14 +142,14 @@ struct SecuritySettingsView: View {
 
     private var passwordSheet: some View {
         VStack(spacing: 16) {
-            Text(hasBackupPassword ? "Change Password" : "Set Backup Password")
+            Text(hasBackupPassword ? "Change Password" : "Mot de passe de secours")
                 .font(BonsoirNonTypography.title)
 
-            SecureField("New Password", text: $newPassword)
+            SecureField("Nouveau mot de passe", text: $newPassword)
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 260)
 
-            SecureField("Confirm Password", text: $confirmPassword)
+            SecureField("Confirmer le mot de passe", text: $confirmPassword)
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 260)
 
@@ -160,11 +160,11 @@ struct SecuritySettingsView: View {
             }
 
             HStack(spacing: 12) {
-                Button("Cancel") {
+                Button("Annuler") {
                     showPasswordSheet = false
                 }
 
-                PrimaryButton("Save") {
+                PrimaryButton("Enregistrer") {
                     savePassword()
                 }
             }
@@ -175,25 +175,25 @@ struct SecuritySettingsView: View {
 
     private func savePassword() {
         guard !newPassword.isEmpty else {
-            passwordError = "Password cannot be empty."
+            passwordError = "Le mot de passe ne peut pas être vide."
             return
         }
 
         guard newPassword.count >= 4 else {
-            passwordError = "Password must be at least 4 characters."
+            passwordError = "Le mot de passe doit faire au moins 4 caractères."
             return
         }
 
         guard newPassword == confirmPassword else {
-            passwordError = "Passwords do not match."
+            passwordError = "Les mots de passe ne correspondent pas."
             return
         }
 
         // A new backup password is a new way to unlock every app: prove it's you first.
         let password = newPassword
-        AuthenticationService.shared.confirmSensitiveAction(reason: "Change the Bonsoir, non backup password") { success in
+        AuthenticationService.shared.confirmSensitiveAction(reason: "Changer le mot de passe de secours de Bonsoir, non") { success in
             guard success else {
-                passwordError = "Authentication required to change the password."
+                passwordError = "Authentification nécessaire pour changer le mot de passe."
                 return
             }
             if KeychainManager.shared.savePassword(password) {
@@ -201,7 +201,7 @@ struct SecuritySettingsView: View {
                 hasBackupPassword = true
                 showPasswordSheet = false
             } else {
-                passwordError = "Failed to save password. Please try again."
+                passwordError = "Échec de l'enregistrement. Réessaie."
             }
         }
     }

@@ -15,7 +15,7 @@ struct AppPickerView: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                Text("Select Applications")
+                Text("Choisir des applications")
                     .font(BonsoirNonTypography.title)
                 Spacer()
                 Button(action: onCancel) {
@@ -31,7 +31,7 @@ struct AppPickerView: View {
             HStack {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.secondary)
-                TextField("Search apps...", text: $searchText)
+                TextField("Rechercher une app…", text: $searchText)
                     .textFieldStyle(.plain)
             }
             .padding(8)
@@ -61,12 +61,12 @@ struct AppPickerView: View {
                     .font(BonsoirNonTypography.caption)
                     .foregroundColor(.secondary)
                 Spacer()
-                Button("Cancel") {
+                Button("Annuler") {
                     onCancel()
                 }
                 .keyboardShortcut(.cancelAction)
 
-                PrimaryButton("Add Selected") {
+                PrimaryButton("Ajouter la sélection") {
                     let selected = installedApps.filter { selectedBundleIDs.contains($0.bundleIdentifier) }
                     onAppsSelected(selected)
                 }

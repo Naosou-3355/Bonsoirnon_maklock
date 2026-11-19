@@ -16,7 +16,7 @@ struct WatchSettingsView: View {
                 bluetoothStatusRow
 
                 if watchService.bluetoothState == .poweredOn || watchService.bluetoothState == .unknown {
-                    Toggle("Use Apple Watch to unlock", isOn: $settings.useWatchUnlock)
+                    Toggle("Déverrouiller avec l'Apple Watch", isOn: $settings.useWatchUnlock)
                         .onChange(of: settings.useWatchUnlock) { _, enabled in
                             Defaults.shared.appSettings = settings
                             if enabled {
@@ -29,7 +29,7 @@ struct WatchSettingsView: View {
             }
 
             if settings.useWatchUnlock && watchService.bluetoothState == .poweredOn {
-                Section("Paired Watch") {
+                Section("Montre associée") {
                     if let watchID = watchService.pairedWatchIdentifier {
                         HStack {
                             Image(systemName: "applewatch")
@@ -39,14 +39,14 @@ struct WatchSettingsView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Apple Watch")
                                     .font(BonsoirNonTypography.body)
-                                Text(watchService.isWatchInRange ? "In range" : "Out of range")
+                                Text(watchService.isWatchInRange ? "À portée" : "Hors de portée")
                                     .font(BonsoirNonTypography.caption)
                                     .foregroundColor(watchService.isWatchInRange ? BonsoirNonColors.success : .secondary)
                             }
 
                             Spacer()
 
-                            Button("Unpair") {
+                            Button("Dissocier") {
                                 watchService.unpair()
                                 settings.useWatchUnlock = false
                                 Defaults.shared.appSettings = settings
@@ -60,7 +60,7 @@ struct WatchSettingsView: View {
                             .font(.system(size: 10, design: .monospaced))
                             .foregroundColor(.secondary)
                             .contextMenu {
-                                Button("Copy") {
+                                Button("Copier") {
                                     NSPasteboard.general.clearContents()
                                     NSPasteboard.general.setString(watchID.uuidString, forType: .string)
                                 }
@@ -103,10 +103,10 @@ struct WatchSettingsView: View {
                     }
                 }
 
-                Section("Sensitivity") {
+                Section("Sensibilité") {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Text("Range:")
+                            Text("Portée :")
                             Slider(value: $sensitivity, in: 0...100, step: 10)
                                 .onChange(of: sensitivity) { _, value in
                                     let rssi = Int(-90 + (value / 100.0) * 40)
@@ -121,15 +121,15 @@ struct WatchSettingsView: View {
                                 .monospacedDigit()
                         }
 
-                        Text("Lower sensitivity means the Watch can be farther away. Higher sensitivity requires the Watch to be closer.")
+                        Text("Sensibilité basse : la montre peut être plus loin. Sensibilité haute : elle doit être plus près.")
                             .font(BonsoirNonTypography.caption)
                             .foregroundColor(.secondary)
                     }
                 }
             }
 
-            Section("How it works") {
-                Text("When your Apple Watch is nearby, Bonsoir, non can automatically unlock protected apps without requiring Touch ID or a password. If the Watch moves out of range, apps will be locked again.")
+            Section("Fonctionnement") {
+                Text("Quand ton Apple Watch est à proximité, Bonsoir, non déverrouille les apps protégées sans Touch ID ni mot de passe. Si elle s'éloigne, les apps se reverrouillent.")
                     .font(BonsoirNonTypography.caption)
                     .foregroundColor(.secondary)
             }
@@ -146,7 +146,7 @@ struct WatchSettingsView: View {
             HStack(spacing: 8) {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(BonsoirNonColors.success)
-                Text("Bluetooth is on")
+                Text("Bluetooth activé")
                     .font(BonsoirNonTypography.body)
             }
 
@@ -155,9 +155,9 @@ struct WatchSettingsView: View {
                 Image(systemName: "bluetooth")
                     .foregroundColor(BonsoirNonColors.error)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Bluetooth is off")
+                    Text("Bluetooth désactivé")
                         .font(BonsoirNonTypography.body)
-                    Text("Turn on Bluetooth in System Settings to use Apple Watch unlock.")
+                    Text("Active le Bluetooth dans Réglages Système pour déverrouiller avec l'Apple Watch.")
                         .font(BonsoirNonTypography.caption)
                         .foregroundColor(.secondary)
                 }
@@ -168,9 +168,9 @@ struct WatchSettingsView: View {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundColor(BonsoirNonColors.locked)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Bluetooth Permission Required")
+                    Text("Autorisation Bluetooth nécessaire")
                         .font(BonsoirNonTypography.body)
-                    Text("Bonsoir, non needs Bluetooth access to detect your Apple Watch. Grant permission in System Settings → Privacy & Security → Bluetooth.")
+                    Text("Bonsoir, non a besoin du Bluetooth pour détecter ton Apple Watch. Autorise-le dans Réglages Système → Confidentialité et sécurité → Bluetooth.")
                         .font(BonsoirNonTypography.caption)
                         .foregroundColor(.secondary)
                 }
@@ -180,7 +180,7 @@ struct WatchSettingsView: View {
             HStack(spacing: 8) {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundColor(BonsoirNonColors.error)
-                Text("Bluetooth is not supported on this Mac")
+                Text("Bluetooth n'est pas pris en charge sur ce Mac")
                     .font(BonsoirNonTypography.body)
             }
 
@@ -188,7 +188,7 @@ struct WatchSettingsView: View {
             HStack(spacing: 8) {
                 ProgressView()
                     .controlSize(.small)
-                Text("Checking Bluetooth status...")
+                Text("Vérification du Bluetooth…")
                     .font(BonsoirNonTypography.body)
                     .foregroundColor(.secondary)
             }
@@ -197,9 +197,9 @@ struct WatchSettingsView: View {
 
     private var sensitivityLabel: String {
         switch sensitivity {
-        case 0..<30: return "Far"
-        case 30..<70: return "Medium"
-        default: return "Close"
+        case 0..<30: return "Loin"
+        case 30..<70: return "Moyen"
+        default: return "Proche"
         }
     }
 }

@@ -6,7 +6,7 @@ struct SettingsView: View {
         TabView {
             GeneralSettingsView()
                 .tabItem {
-                    Label("General", systemImage: "gearshape")
+                    Label("Général", systemImage: "gearshape")
                 }
 
             AppsSettingsView()
@@ -16,12 +16,12 @@ struct SettingsView: View {
 
             SecuritySettingsView()
                 .tabItem {
-                    Label("Security", systemImage: "lock.shield")
+                    Label("Sécurité", systemImage: "lock.shield")
                 }
 
             WatchSettingsView()
                 .tabItem {
-                    Label("Watch", systemImage: "applewatch")
+                    Label("Montre", systemImage: "applewatch")
                 }
 
             ActivitySettingsView()

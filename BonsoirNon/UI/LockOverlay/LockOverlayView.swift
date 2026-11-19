@@ -45,7 +45,7 @@ struct LockOverlayView: View {
                     AppIconView(bundleIdentifier: bundleIdentifier, size: 64)
 
                     // Title
-                    Text("\(appName) is Locked")
+                    Text("\(appName) est verrouillé")
                         .font(BonsoirNonTypography.largeTitle)
                         .foregroundColor(BonsoirNonColors.textPrimary)
 
@@ -55,7 +55,7 @@ struct LockOverlayView: View {
                             .controlSize(.regular)
                             .padding(.top, 4)
 
-                        Text("Authenticating...")
+                        Text("Authentification…")
                             .font(BonsoirNonTypography.body)
                             .foregroundColor(BonsoirNonColors.textSecondary)
                     } else {
@@ -66,12 +66,12 @@ struct LockOverlayView: View {
                                 .foregroundColor(BonsoirNonColors.error)
                         }
 
-                        PrimaryButton("Try Again", icon: "touchid") {
+                        PrimaryButton("Réessayer", icon: "touchid") {
                             attemptTouchID()
                         }
                         .padding(.top, 4)
 
-                        SecondaryButton("Use Password Instead") {
+                        SecondaryButton("Utiliser le mot de passe") {
                             OverlayWindowService.shared.enableKeyboardInput()
                             withAnimation(BonsoirNonAnimations.standard) {
                                 showPasswordInput = true
@@ -81,7 +81,7 @@ struct LockOverlayView: View {
 
                     // Dev mode skip button
                     #if DEBUG
-                    Button("Skip (Dev)") {
+                    Button("Passer (dev)") {
                         onDismiss()
                     }
                     .font(BonsoirNonTypography.caption)
@@ -121,7 +121,7 @@ struct LockOverlayView: View {
         OverlayWindowService.shared.setTouchIDMode(true)
 
         AuthenticationService.shared.authenticateWithTouchID(
-            reason: "Unlock \(appName)"
+            reason: "Déverrouiller \(appName)"
         ) { result in
             // Restore overlay level and mouse capture
             OverlayWindowService.shared.setTouchIDMode(false)

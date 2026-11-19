@@ -6,7 +6,7 @@ import UserNotifications
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let menuBarController = MenuBarController()
 
-    /// Global shortcut for "Lock All Now" (Control + Option + Command + L).
+    /// Global shortcut for "Tout verrouiller" (Control + Option + Command + L).
     private var lockAllHotKey: HotKey?
 
     /// Set when quitting is legitimate: menu Quit (authenticated), logout, shutdown.
@@ -46,7 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         menuBarController.setup()
 
-        // "Lock All Now": menu item and global shortcut.
+        // "Tout verrouiller": menu item and global shortcut.
         NotificationCenter.default.addObserver(forName: .lockAllNow, object: nil, queue: .main) { [weak self] _ in
             self?.lockAllNow()
         }
@@ -272,12 +272,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Post a local notification when Watch auto-unlocks an app.
     static func sendWatchUnlockNotification(appName: String) {
-        sendNotification(title: "Unlocked", body: "Apple Watch unlocked \(appName)")
+        sendNotification(title: "Déverrouillé", body: "Apple Watch a déverrouillé \(appName)")
     }
 
     /// Post a local notification when Touch ID or password unlocks an app.
     static func sendUnlockNotification(appName: String) {
-        sendNotification(title: "Unlocked", body: "\(appName) unlocked with Touch ID")
+        sendNotification(title: "Déverrouillé", body: "\(appName) déverrouillé avec Touch ID")
     }
 
     private static func sendNotification(title: String, body: String) {
