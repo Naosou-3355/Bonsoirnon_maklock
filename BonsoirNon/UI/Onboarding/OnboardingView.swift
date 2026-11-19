@@ -11,15 +11,15 @@ struct OnboardingView: View {
     private let infoSteps: [Int: OnboardingInfoStep] = [
         0: OnboardingInfoStep(
             icon: OnboardingInfoStep.appIcon,
-            title: "Welcome to Bonsoir, non",
-            description: "Lock any macOS app with Touch ID or password.\nYour apps, your privacy."
+            title: "Bienvenue dans Bonsoir, non",
+            description: "Verrouille n'importe quelle app avec Touch ID ou un mot de passe.\nTes apps, ta vie privée."
         ),
         // Step 1 = Panic Key (custom view with visual keycaps)
         // Step 2 = Password Setup (custom view)
         3: OnboardingInfoStep(
             icon: "plus.app.fill",
-            title: "Add Apps to Protect",
-            description: "Open Settings → Apps to choose which applications require authentication.\n\nStart with a test app like Chess."
+            title: "Ajoute des apps à protéger",
+            description: "Ouvre Réglages → Apps pour choisir les applications à protéger.\n\nCommence par une app de test comme Échecs."
         )
         // Step 4 = Final Step (custom view with Launch at Login toggle)
     ]
@@ -58,11 +58,11 @@ struct OnboardingView: View {
                 // Password step handles its own button
                 if currentStep != 2 {
                     if currentStep < totalSteps - 1 {
-                        PrimaryButton("Continue") {
+                        PrimaryButton("Continuer") {
                             advanceStep()
                         }
                     } else {
-                        PrimaryButton("Get Started") {
+                        PrimaryButton("C'est parti") {
                             onComplete()
                         }
                     }
@@ -128,8 +128,8 @@ private struct PanicKeyStep: View {
         } else {
             InfoStepView(step: OnboardingInfoStep(
                 icon: "exclamationmark.triangle.fill",
-                title: "If You Get Stuck",
-                description: "The lock screen closes by itself after 60 seconds and the app stays hidden and locked.\n\nTerminal, Finder, Activity Monitor and System Settings can never be locked, so you can always quit Bonsoir, non from there."
+                title: "Si tu es bloqué",
+                description: "L'écran de verrouillage se ferme tout seul après 60 secondes, et l'app reste masquée et verrouillée.\n\nTerminal, Finder, Moniteur d'activité et Réglages Système ne peuvent jamais être verrouillés : tu peux toujours quitter Bonsoir, non depuis là."
             ))
         }
     }
@@ -144,11 +144,11 @@ private struct PanicKeyStep: View {
                 .foregroundColor(BonsoirNonColors.gold)
                 .frame(height: 60)
 
-            Text("Emergency Panic Key")
+            Text("Raccourci d'urgence")
                 .font(BonsoirNonTypography.largeTitle)
                 .foregroundColor(BonsoirNonColors.textPrimary)
 
-            Text("If you ever get locked out, this shortcut\ninstantly dismisses all overlays:")
+            Text("Si tu restes bloqué, ce raccourci\nferme immédiatement tous les écrans de verrouillage :")
                 .font(BonsoirNonTypography.body)
                 .foregroundColor(BonsoirNonColors.textSecondary)
                 .multilineTextAlignment(.center)
@@ -167,7 +167,7 @@ private struct PanicKeyStep: View {
             }
             .padding(.vertical, 8)
 
-            Text("Try it now — it always works, even in full screen.")
+            Text("Essaie-le maintenant : il marche toujours, même en plein écran.")
                 .font(BonsoirNonTypography.caption)
                 .foregroundColor(BonsoirNonColors.textSecondary)
                 .multilineTextAlignment(.center)
@@ -226,11 +226,11 @@ private struct PasswordSetupStep: View {
                 .foregroundColor(BonsoirNonColors.gold)
                 .frame(height: 60)
 
-            Text("Set Backup Password")
+            Text("Mot de passe de secours")
                 .font(BonsoirNonTypography.largeTitle)
                 .foregroundColor(BonsoirNonColors.textPrimary)
 
-            Text("Required as fallback when Touch ID is unavailable.\nYou can change it later in Settings.")
+            Text("Utilisé quand Touch ID n'est pas disponible.\nTu pourras le changer dans les Réglages.")
                 .font(BonsoirNonTypography.body)
                 .foregroundColor(BonsoirNonColors.textSecondary)
                 .multilineTextAlignment(.center)
@@ -240,19 +240,19 @@ private struct PasswordSetupStep: View {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(BonsoirNonColors.success)
-                    Text("Password saved!")
+                    Text("Mot de passe enregistré !")
                         .font(BonsoirNonTypography.body)
                         .foregroundColor(BonsoirNonColors.success)
                 }
                 .padding(.top, 8)
 
-                PrimaryButton("Continue") {
+                PrimaryButton("Continuer") {
                     onContinue()
                 }
             } else {
                 VStack(spacing: 10) {
-                    passwordField("Password (4+ characters)", text: $password)
-                    passwordField("Confirm Password", text: $confirmPassword)
+                    passwordField("Mot de passe (4 caractères min.)", text: $password)
+                    passwordField("Confirmer le mot de passe", text: $confirmPassword)
                         .onSubmit { savePassword() }
                 }
 
@@ -261,7 +261,7 @@ private struct PasswordSetupStep: View {
                     HStack(spacing: 4) {
                         Image(systemName: showPassword ? "eye.slash" : "eye")
                             .font(.system(size: 11))
-                        Text(showPassword ? "Hide password" : "Show password")
+                        Text(showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe")
                             .font(BonsoirNonTypography.caption)
                     }
                     .foregroundColor(BonsoirNonColors.textSecondary)
@@ -274,7 +274,7 @@ private struct PasswordSetupStep: View {
                         .foregroundColor(BonsoirNonColors.error)
                 }
 
-                PrimaryButton("Save Password") {
+                PrimaryButton("Enregistrer") {
                     savePassword()
                 }
             }
@@ -298,15 +298,15 @@ private struct PasswordSetupStep: View {
 
     private func savePassword() {
         guard !password.isEmpty else {
-            errorMessage = "Password cannot be empty."
+            errorMessage = "Le mot de passe ne peut pas être vide."
             return
         }
         guard password.count >= 4 else {
-            errorMessage = "Password must be at least 4 characters."
+            errorMessage = "Le mot de passe doit faire au moins 4 caractères."
             return
         }
         guard password == confirmPassword else {
-            errorMessage = "Passwords do not match."
+            errorMessage = "Les mots de passe ne correspondent pas."
             return
         }
 
@@ -317,7 +317,7 @@ private struct PasswordSetupStep: View {
                 isSaved = true
             }
         } else {
-            errorMessage = "Failed to save. Please try again."
+            errorMessage = "Échec de l'enregistrement. Réessaie."
         }
     }
 }
@@ -336,22 +336,22 @@ private struct FinalStep: View {
                 .foregroundColor(BonsoirNonColors.gold)
                 .frame(height: 60)
 
-            Text("You're All Set")
+            Text("Tout est prêt")
                 .font(BonsoirNonTypography.largeTitle)
                 .foregroundColor(BonsoirNonColors.textPrimary)
                 .multilineTextAlignment(.center)
 
-            Text("Bonsoir, non runs in your menu bar.\nProtected apps will require Touch ID — just put your finger on the sensor.")
+            Text("Bonsoir, non vit dans ta barre des menus.\nLes apps protégées demanderont Touch ID : pose simplement ton doigt sur le capteur.")
                 .font(BonsoirNonTypography.body)
                 .foregroundColor(BonsoirNonColors.textSecondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 340)
 
             VStack(spacing: 12) {
-                Toggle("Launch Bonsoir, non at login", isOn: $launchAtLogin)
+                Toggle("Ouvrir Bonsoir, non à la connexion", isOn: $launchAtLogin)
                     .toggleStyle(.goldSwitch)
 
-                Text("You can also configure idle auto-lock\nand other options in Settings.")
+                Text("Tu peux aussi régler le verrouillage après inactivité\net d'autres options dans les Réglages.")
                     .font(BonsoirNonTypography.caption)
                     .foregroundColor(BonsoirNonColors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -371,15 +371,7 @@ private struct FinalStep: View {
         settings.launchAtLogin = launchAtLogin
         Defaults.shared.appSettings = settings
 
-        do {
-            if launchAtLogin {
-                try SMAppService.mainApp.register()
-            } else {
-                try SMAppService.mainApp.unregister()
-            }
-        } catch {
-            NSLog("[BonsoirNon] Failed to set login item: %@", error.localizedDescription)
-        }
+        LaunchAtLogin.apply(launchAtLogin)
     }
 }
 

@@ -30,12 +30,15 @@ final class OverlayWindowService {
 
         currentApp = app
 
-        // Don't hide the protected app — the overlay blur covers its content,
-        // and hiding it causes macOS to reassign app focus, which interferes
-        // with the system Touch ID dialog.
-
         createOverlayWindows(for: app)
         startTimeoutTimer()
+        KeyboardGuard.shared.startIfPossible()   // in case the permission was granted since launch
+
+        // Hide the locked app while the overlay is up: its windows leave Mission
+        // Control / App Exposé and it stops receiving keystrokes. Done before the
+        // Touch ID prompt (which the overlay triggers 0.5 s after appearing) so the
+        // focus change doesn't fight with the system dialog. Unhidden on unlock.
+        hideRunningApp(bundleIdentifier: app.bundleIdentifier)
 
         NSLog("[BonsoirNon] Overlay shown for: %@", app.name)
     }
@@ -84,6 +87,7 @@ final class OverlayWindowService {
 
         let lockedApp = currentApp
         currentApp = nil
+        ActivityLog.shared.record(.lockTimedOut, app: lockedApp?.name)
 
         if let lockedApp {
             let bundleID = lockedApp.bundleIdentifier
@@ -216,8 +220,16 @@ final class OverlayWindowService {
             NSLog("[BonsoirNon] App not running, skipping activation: %@", bundleIdentifier)
             return
         }
+        app.unhide()
         app.activate()
         NSLog("[BonsoirNon] Activated app: %@", bundleIdentifier)
+    }
+
+    /// Hide a running app (used while it is locked).
+    func hideRunningApp(bundleIdentifier: String) {
+        NSWorkspace.shared.runningApplications
+            .first(where: { $0.bundleIdentifier == bundleIdentifier })?
+            .hide()
     }
 
     // MARK: - Timeout

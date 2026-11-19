@@ -36,7 +36,7 @@ struct MenuBarView: View {
                 Circle()
                     .fill(isProtectionEnabled ? BonsoirNonColors.success : BonsoirNonColors.textSecondary)
                     .frame(width: 8, height: 8)
-                Text(isProtectionEnabled ? "Protection Active" : "Protection Off")
+                Text(isProtectionEnabled ? "Protection active" : "Protection coupée")
                     .font(BonsoirNonTypography.body)
                     .foregroundColor(.secondary)
                 Spacer()
@@ -68,7 +68,7 @@ struct MenuBarView: View {
                 Image(systemName: "app.badge.checkmark")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
-                Text("\(appCount) protected app\(appCount == 1 ? "" : "s")")
+                Text("\(appCount) app\(appCount > 1 ? "s" : "") protégée\(appCount > 1 ? "s" : "")")
                     .font(BonsoirNonTypography.caption)
                     .foregroundColor(.secondary)
             }
@@ -79,18 +79,22 @@ struct MenuBarView: View {
                 .padding(.horizontal, 8)
 
             // Actions
-            MenuBarButton(title: "Settings...", icon: "gearshape") {
+            MenuBarButton(title: "Tout verrouiller", icon: "lock.fill", shortcut: "⌃⌥⌘L") {
+                NotificationCenter.default.post(name: .lockAllNow, object: nil)
+            }
+
+            MenuBarButton(title: "Réglages…", icon: "gearshape") {
                 onSettingsClicked()
             }
 
-            MenuBarButton(title: "About Bonsoir, non", icon: "info.circle") {
+            MenuBarButton(title: "À propos de Bonsoir, non", icon: "info.circle") {
                 showAboutWindow()
             }
 
             Divider()
                 .padding(.horizontal, 8)
 
-            MenuBarButton(title: "Quit Bonsoir, non", icon: "power") {
+            MenuBarButton(title: "Quitter Bonsoir, non", icon: "power") {
                 onQuitClicked()
             }
 
@@ -107,7 +111,7 @@ struct MenuBarView: View {
             backing: .buffered,
             defer: false
         )
-        window.title = "About Bonsoir, non"
+        window.title = "À propos de Bonsoir, non"
         window.contentView = NSHostingView(rootView: AboutView())
         window.isReleasedWhenClosed = true
         window.center()
@@ -121,6 +125,7 @@ struct MenuBarView: View {
 private struct MenuBarButton: View {
     let title: String
     let icon: String
+    var shortcut: String? = nil
     let action: () -> Void
 
     @State private var isHovered = false
@@ -134,6 +139,11 @@ private struct MenuBarButton: View {
                 Text(title)
                     .font(BonsoirNonTypography.body)
                 Spacer()
+                if let shortcut {
+                    Text(shortcut)
+                        .font(BonsoirNonTypography.caption)
+                        .foregroundColor(.secondary)
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)

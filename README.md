@@ -26,14 +26,20 @@ En cas de doute, Bonsoir, non verrouille.
 | | MakLock | Bonsoir, non |
 |---|---|---|
 | Écran de verrouillage laissé sans réponse | Se ferme et déverrouille | Se ferme (60 s), masque l'app, reste verrouillé |
-| Retour sur une app déjà déverrouillée | Reste ouverte (option sans effet) | Redemande Touch ID |
+| Retour sur une app déjà déverrouillée | Reste ouverte (option sans effet) | Redemande Touch ID, immédiatement ou après 1, 5, 15 min (réglable) |
+| App derrière l'écran de verrouillage | Visible dans Mission Control, reçoit la frappe | Masquée ; frappe bloquée (avec l'autorisation Accessibilité) |
 | Écran éteint ou session verrouillée | Ignoré (seule la veille complète comptait) | Tout se reverrouille |
-| Apple Watch | « Déverrouillée » accepté de n'importe quel appareil Apple proche | Seule la montre appairée compte ; état inconnu ou ancien = verrouillée |
+| Apple Watch | Appairée automatiquement à la première « watch » venue ; « déverrouillée » accepté de n'importe quel appareil | Tu choisis ta montre (avec Touch ID) ; seule elle compte ; état inconnu ou ancien = verrouillée ; signal lissé (plus de reverrouillage intempestif) |
+| Réglages et liste des apps | UserDefaults (modifiables avec `defaults write`) | Trousseau |
+| Quitter l'app | Cmd+Q, `kill`, Moniteur d'activité | Seulement via le menu ; relancée automatiquement si elle est tuée |
 | Mot de passe de secours | Stocké en clair dans le trousseau | Empreinte PBKDF2-SHA256 (600 000 itérations), comparaison à temps constant |
-| Essais de mot de passe | Illimités | Blocage progressif après 5 échecs (30 s → 15 min) |
+| Essais de mot de passe | Illimités | Blocage progressif après 5 échecs (30 s → 15 min), conservé après redémarrage |
 | Retirer ou désactiver une app protégée | Un clic | Touch ID ou mot de passe du Mac |
 | Couper la protection | Un clic | Touch ID ou mot de passe du Mac |
 | Raccourci de secours (`Cmd+Opt+Shift+Ctrl+U`) | Actif partout | Builds Debug uniquement |
+| Journal | Aucun | Réglages → Journal : déverrouillages, échecs, tentatives de fermeture |
+| Tout verrouiller d'un coup | Non | Menu ou `⌃⌥⌘L` |
+| Langue | Anglais | Français |
 | Mises à jour automatiques | Sparkle (serveur de l'auteur) | Supprimées |
 | CI | Non bloquante | Permissions minimales, actions figées par SHA, CodeQL, Dependabot |
 
@@ -47,13 +53,16 @@ En cas de doute, Bonsoir, non verrouille.
    open BonsoirNon.xcodeproj
    ```
 3. Dans Xcode : **Signing & Capabilities** → choisir ton équipe.
-4. Compiler la version Release et l'installer dans Applications (elle apparaît alors dans Spotlight) :
+4. Si une version est déjà installée, la quitter via son menu (**Quitter Bonsoir, non**) : sinon elle se relance toute seule.
+5. Compiler la version Release et l'installer dans Applications (elle apparaît alors dans Spotlight) :
    ```bash
    xcodebuild -project BonsoirNon.xcodeproj -scheme BonsoirNon -configuration Release -derivedDataPath build build
    ditto "build/Build/Products/Release/Bonsoir Non.app" "/Applications/Bonsoir Non.app"
    ```
 
 `Cmd+R` dans Xcode lance une version Debug depuis un dossier de travail : pratique pour développer, mais elle n'est pas installée.
+
+Tests : `./scripts/run-tests.sh` (aussi lancés par la CI).
 
 Les icônes se régénèrent avec `swift scripts/make-icons.swift BonsoirNon/Resources/Assets.xcassets`.
 

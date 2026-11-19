@@ -12,6 +12,15 @@ final class OnboardingWindowController {
     /// Show onboarding if the user hasn't completed it yet.
     func showIfNeeded() {
         guard !Defaults.shared.hasCompletedOnboarding else { return }
+        // The onboarding lets anyone set a backup password without knowing the old
+        // one. The flag above lives in UserDefaults and can be deleted from Terminal,
+        // so never show it again once the app has been set up.
+        guard !KeychainManager.shared.hasPassword(),
+              Defaults.shared.protectedApps.isEmpty
+        else {
+            Defaults.shared.hasCompletedOnboarding = true
+            return
+        }
         show()
     }
 
@@ -35,7 +44,7 @@ final class OnboardingWindowController {
             backing: .buffered,
             defer: false
         )
-        newWindow.title = "Welcome to Bonsoir, non"
+        newWindow.title = "Bienvenue dans Bonsoir, non"
         newWindow.contentView = hostingView
         newWindow.isReleasedWhenClosed = false
         newWindow.level = .floating

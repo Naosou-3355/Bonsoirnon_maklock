@@ -189,7 +189,7 @@
                     </div>
                     <div class="card">
                         <h3>Verrouillage au changement d'app</h3>
-                        <p>Quitter une app protégée suffit à la reverrouiller.</p>
+                        <p>Passer à une autre app reverrouille l'app protégée, tout de suite ou au bout de 1, 5 ou 15 minutes. <code>⌃⌥⌘L</code> verrouille tout d'un coup.</p>
                     </div>
                     <div class="card">
                         <h3>Écran verrouillé ou en veille</h3>
@@ -218,11 +218,15 @@
                         </thead>
                         <tbody>
                             <tr><td>Écran laissé sans réponse</td><td class="was">Se ferme et déverrouille</td><td class="now">Se ferme, masque l'app, reste verrouillé</td></tr>
-                            <tr><td>Retour sur une app déjà déverrouillée</td><td class="was">Reste ouverte</td><td class="now">Redemande ton identité</td></tr>
+                            <tr><td>Retour sur une app déjà déverrouillée</td><td class="was">Reste ouverte</td><td class="now">Redemande ton identité (tout de suite ou après un délai choisi)</td></tr>
+                            <tr><td>App derrière l'écran de verrouillage</td><td class="was">Visible dans Mission Control, reçoit la frappe</td><td class="now">Masquée, frappe bloquée</td></tr>
                             <tr><td>Écran éteint ou session verrouillée</td><td class="was">Ignoré</td><td class="now">Tout se reverrouille</td></tr>
-                            <tr><td>Apple Watch</td><td class="was">N'importe quel iPhone déverrouillé à proximité suffisait</td><td class="now">Seule ta montre compte ; état inconnu = verrouillée</td></tr>
+                            <tr><td>Apple Watch</td><td class="was">N'importe quel iPhone déverrouillé à proximité suffisait</td><td class="now">Tu choisis ta montre ; seule elle compte ; état inconnu = verrouillée</td></tr>
+                            <tr><td>Réglages</td><td class="was">Modifiables depuis le Terminal</td><td class="now">Rangés dans le trousseau</td></tr>
+                            <tr><td>Quitter l'app</td><td class="was">Cmd+Q ou « Forcer à quitter »</td><td class="now">Seulement via son menu ; relancée si on la tue</td></tr>
                             <tr><td>Mot de passe de secours</td><td class="was">Stocké en clair dans le trousseau</td><td class="now">Empreinte PBKDF2-SHA256, 600 000 itérations</td></tr>
-                            <tr><td>Essais de mot de passe</td><td class="was">Illimités</td><td class="now">Blocage progressif après 5 échecs</td></tr>
+                            <tr><td>Essais de mot de passe</td><td class="was">Illimités</td><td class="now">Blocage progressif après 5 échecs, même après redémarrage</td></tr>
+                            <tr><td>Journal des tentatives</td><td class="was">Aucun</td><td class="now">Réglages → Journal</td></tr>
                             <tr><td>Retirer ou désactiver une app protégée</td><td class="was">Un clic</td><td class="now">Touch ID ou mot de passe du Mac</td></tr>
                             <tr><td>Couper la protection</td><td class="was">Un clic</td><td class="now">Touch ID ou mot de passe du Mac</td></tr>
                             <tr><td>Raccourci clavier de secours</td><td class="was">Actif pour tout le monde</td><td class="now">Versions de développement uniquement</td></tr>
@@ -245,6 +249,7 @@ cd Bonsoirnon_maklock
 open BonsoirNon.xcodeproj</code></pre>
                     </li>
                     <li>Dans Xcode, onglet <strong>Signing &amp; Capabilities</strong> : choisis ton compte Apple dans « Team ».</li>
+                    <li>Si Bonsoir, non est déjà installé, quitte-le via son menu (« Quitter Bonsoir, non ») : sinon il se relance tout seul.</li>
                     <li>Compile la version finale et copie-la dans Applications :
                         <pre><code>xcodebuild -project BonsoirNon.xcodeproj -scheme BonsoirNon \
   -configuration Release -derivedDataPath build build

@@ -21,6 +21,9 @@ final class AppMonitorService: ObservableObject {
     /// Prevents checkRunningApps from triggering duplicate prompts.
     private var pendingLockBundleIDs: Set<String> = []
 
+    /// When unlocked apps were left, for the re-lock delay.
+    private var relockTracker = RelockTracker()
+
     private init() {}
 
     /// Start monitoring app launches and activations.
@@ -65,11 +68,16 @@ final class AppMonitorService: ObservableObject {
                 guard let bundleID = app.bundleIdentifier else { return }
                 guard self?.authenticatedApps.contains(bundleID) == true else { return }
 
-                // "Require authentication on app switch": leaving the app locks it again.
-                if Defaults.shared.appSettings.requireAuthOnActivate {
+                // Re-lock delay: "immediately" locks now, otherwise remember when the
+                // app was left and decide when it comes back (handleAppEvent).
+                let delay = Defaults.shared.appSettings.relockDelay
+                if delay == 0 {
                     self?.resetLock(for: bundleID)
                     NSLog("[BonsoirNon] App switched away, auth cleared: %@", bundleID)
                     return
+                }
+                if delay != RelockDelay.never {
+                    self?.relockTracker.didLeave(bundleID)
                 }
 
                 // Delay to let window close animations finish
@@ -134,6 +142,7 @@ final class AppMonitorService: ObservableObject {
     /// Mark an app as authenticated. It stays unlocked until the app quits, idle, or sleep.
     func markAuthenticated(_ bundleIdentifier: String) {
         authenticatedApps.insert(bundleIdentifier)
+        relockTracker.forget(bundleIdentifier)
         pendingLockBundleIDs.remove(bundleIdentifier)
         NSLog("[BonsoirNon] App session authenticated: %@", bundleIdentifier)
     }
@@ -142,6 +151,7 @@ final class AppMonitorService: ObservableObject {
     func clearAllAuthentications() {
         authenticatedApps.removeAll()
         pendingLockBundleIDs.removeAll()
+        relockTracker.forgetAll()
         NSLog("[BonsoirNon] All app sessions cleared")
     }
 
@@ -197,11 +207,21 @@ final class AppMonitorService: ObservableObject {
         let settings = Defaults.shared.appSettings
         guard settings.isProtectionEnabled else { return }
 
-        // Skip if app is already authenticated in this session
-        guard !authenticatedApps.contains(bundleID) else { return }
+        // Unlocked app coming back: re-lock if it was left longer than the delay.
+        if authenticatedApps.contains(bundleID) {
+            let delay = settings.relockDelay
+            guard relockTracker.shouldRelockOnReturn(bundleID, delay: delay) else { return }
+            resetLock(for: bundleID)
+            NSLog("[BonsoirNon] Re-lock delay (%d s) passed for %@", delay, bundleID)
+        }
 
-        // Don't show overlay if one is already showing
-        guard !OverlayWindowService.shared.isShowing else { return }
+        // An overlay is already up (for this app or another one): keep this
+        // locked app hidden so it can't be used or read behind the overlay
+        // (e.g. brought back with Cmd+Tab). It gets its own prompt later.
+        if OverlayWindowService.shared.isShowing {
+            runningApp.hide()
+            return
+        }
 
         // Don't trigger if a prompt is already pending for this app
         guard !pendingLockBundleIDs.contains(bundleID) else { return }

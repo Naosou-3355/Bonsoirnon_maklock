@@ -1,12 +1,68 @@
 import AppKit
+import HotKey
 import UserNotifications
 
 /// Application delegate responsible for lifecycle and menu bar setup.
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let menuBarController = MenuBarController()
 
+    /// Global shortcut for "Tout verrouiller" (Control + Option + Command + L).
+    private var lockAllHotKey: HotKey?
+
+    /// Set when quitting is legitimate: menu Quit (authenticated), logout, shutdown.
+    private static var terminationAuthorized = false
+
+    /// Quit for real (the only path the keep-alive agent does not undo).
+    static func terminateAuthorized() {
+        terminationAuthorized = true
+        NSApp.terminate(nil)
+    }
+
+    /// Refuse quit requests that don't come from our menu: Activity Monitor's
+    /// "Quit", `osascript -e 'quit app …'`, Cmd+Q. They exit cleanly, so the
+    /// keep-alive agent would not relaunch the app. Force Quit still works and
+    /// is relaunched by launchd.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        if Self.terminationAuthorized || SafetyManager.isDevMode {
+            return .terminateNow
+        }
+        NSLog("[BonsoirNon] Blocked a quit request that did not come from the menu")
+        ActivityLog.shared.record(.quitRefused)
+        return .terminateCancel
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Launched by hand while the launchd agent is in charge: let it run instead.
+        if KeepAliveService.shared.handOverIfNeeded() {
+            exit(0)
+        }
+
+        // Logout / restart / shutdown must not be blocked by applicationShouldTerminate.
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.willPowerOffNotification, object: nil, queue: .main
+        ) { _ in
+            Self.terminationAuthorized = true
+        }
+
         menuBarController.setup()
+
+        // "Tout verrouiller": menu item and global shortcut.
+        NotificationCenter.default.addObserver(forName: .lockAllNow, object: nil, queue: .main) { [weak self] _ in
+            self?.lockAllNow()
+        }
+        lockAllHotKey = HotKey(key: .l, modifiers: [.control, .option, .command])
+        lockAllHotKey?.keyDownHandler = { [weak self] in
+            self?.lockAllNow()
+        }
+
+        // Block keystrokes to locked apps (needs Accessibility; asked once).
+        KeyboardGuard.shared.startIfPossible()
+        if !KeyboardGuard.shared.isTrusted,
+           !UserDefaults.standard.bool(forKey: "askedAccessibility"),
+           Defaults.shared.hasCompletedOnboarding {
+            UserDefaults.standard.set(true, forKey: "askedAccessibility")
+            KeyboardGuard.shared.requestPermission()
+        }
 
         // Request notification permission (for Watch unlock notifications)
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
@@ -31,6 +87,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 && WatchProximityService.shared.canAutoUnlock
             if watchCanUnlock {
                 AppMonitorService.shared.markAuthenticated(app.bundleIdentifier)
+                ActivityLog.shared.record(.unlockWatch, app: app.name)
                 WatchUnlockToast.shared.show(for: app.bundleIdentifier)
                 Self.sendWatchUnlockNotification(appName: app.name)
                 return
@@ -51,13 +108,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             WatchProximityService.shared.startScanning()
         }
 
-        // Delay app monitoring slightly to give Watch time to connect on startup.
-        // Without this, protected running apps would trigger overlays before
-        // the Watch connection is established.
-        let monitorDelay: TimeInterval = Defaults.shared.appSettings.useWatchUnlock ? 8.0 : 0
-        DispatchQueue.main.asyncAfter(deadline: .now() + monitorDelay) {
-            AppMonitorService.shared.startMonitoring()
-        }
+        // Start monitoring right away: after a relaunch (Force Quit, crash), already
+        // open protected apps must be covered at once. If the Watch is on the wrist,
+        // it dismisses the overlay as soon as it connects (onWatchInRange).
+        AppMonitorService.shared.startMonitoring()
 
         // Start auto-close monitoring if any protected app has auto-close enabled
         if ProtectedAppsManager.shared.apps.contains(where: { $0.autoClose }) {
@@ -110,6 +164,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let lockedBundleID = OverlayWindowService.shared.currentBundleIdentifier
             let lockedAppName = OverlayWindowService.shared.currentAppName
             OverlayWindowService.shared.hide()
+            ActivityLog.shared.record(.unlockWatch, app: lockedAppName)
             WatchUnlockToast.shared.show(for: lockedBundleID)
             Self.sendWatchUnlockNotification(appName: lockedAppName ?? "app")
             self?.menuBarController.iconState = .active
@@ -151,6 +206,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if showedOverlay {
             menuBarController.iconState = .locked
         }
+    }
+
+    /// Forget every unlock right now: background protected apps are hidden, the one
+    /// in front shows the lock screen. For when you step away from the Mac.
+    private func lockAllNow() {
+        guard Defaults.shared.appSettings.isProtectionEnabled else { return }
+        menuBarController.closePopover()
+        AppMonitorService.shared.clearAllAuthentications()
+
+        let frontID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+        for app in ProtectedAppsManager.shared.apps where app.isEnabled && !SafetyManager.isBlacklisted(app.bundleIdentifier) {
+            guard app.bundleIdentifier != frontID else { continue }
+            OverlayWindowService.shared.hideRunningApp(bundleIdentifier: app.bundleIdentifier)
+        }
+        lockFrontmostProtectedApp()
+        NSLog("[BonsoirNon] Lock All Now")
+        ActivityLog.shared.record(.lockAllNow)
     }
 
     /// Show the overlay for the frontmost app if it is protected and not unlocked.
@@ -200,12 +272,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Post a local notification when Watch auto-unlocks an app.
     static func sendWatchUnlockNotification(appName: String) {
-        sendNotification(title: "Unlocked", body: "Apple Watch unlocked \(appName)")
+        sendNotification(title: "Déverrouillé", body: "Apple Watch a déverrouillé \(appName)")
     }
 
     /// Post a local notification when Touch ID or password unlocks an app.
     static func sendUnlockNotification(appName: String) {
-        sendNotification(title: "Unlocked", body: "\(appName) unlocked with Touch ID")
+        sendNotification(title: "Déverrouillé", body: "\(appName) déverrouillé avec Touch ID")
     }
 
     private static func sendNotification(title: String, body: String) {

@@ -22,7 +22,7 @@ struct AboutView: View {
                 .foregroundColor(.secondary)
 
             // Description
-            Text("Lock any macOS app with Touch ID or password.")
+            Text("Verrouille n'importe quelle app avec Touch ID ou un mot de passe.")
                 .font(BonsoirNonTypography.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -32,9 +32,9 @@ struct AboutView: View {
 
             // Credits
             VStack(spacing: 4) {
-                Text("Based on MakLock by Maciej Dutkiewicz")
+                Text("Basé sur MakLock de Maciej Dutkiewicz")
                     .font(BonsoirNonTypography.body)
-                Text("Free and open source under MIT License")
+                Text("Libre et open source, licence MIT")
                     .font(BonsoirNonTypography.caption)
                     .foregroundColor(.secondary)
             }

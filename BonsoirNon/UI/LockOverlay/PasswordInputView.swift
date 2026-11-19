@@ -11,11 +11,11 @@ struct PasswordInputView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Enter Password")
+            Text("Mot de passe")
                 .font(BonsoirNonTypography.title)
                 .foregroundColor(BonsoirNonColors.textPrimary)
 
-            SecureField("Password", text: $password)
+            SecureField("Mot de passe", text: $password)
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 240)
                 .onSubmit { verifyPassword() }
@@ -28,11 +28,11 @@ struct PasswordInputView: View {
             }
 
             HStack(spacing: 12) {
-                Button("Cancel") {
+                Button("Annuler") {
                     onCancel()
                 }
 
-                PrimaryButton("Unlock") {
+                PrimaryButton("Déverrouiller") {
                     verifyPassword()
                 }
             }
@@ -50,8 +50,14 @@ struct PasswordInputView: View {
 
         switch result {
         case .success:
+            ActivityLog.shared.record(.unlockPassword, app: OverlayWindowService.shared.currentAppName)
             onSuccess()
         case .failure(let error):
+            if case .tooManyAttempts = error {
+                ActivityLog.shared.record(.passwordLockedOut, app: OverlayWindowService.shared.currentAppName)
+            } else {
+                ActivityLog.shared.record(.wrongPassword, app: OverlayWindowService.shared.currentAppName)
+            }
             errorMessage = error.localizedDescription
             password = ""
             triggerShake()

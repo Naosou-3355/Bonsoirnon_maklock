@@ -19,6 +19,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Run tests
+        run: ./scripts/run-tests.sh
+
       - name: Build Debug
         run: |
           set -o pipefail

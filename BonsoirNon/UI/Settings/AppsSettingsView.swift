@@ -7,7 +7,7 @@ struct AppsSettingsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Protected Applications")
+            Text("Applications protégées")
                 .font(BonsoirNonTypography.title)
 
             if manager.apps.isEmpty {
@@ -20,7 +20,7 @@ struct AppsSettingsView: View {
 
             HStack {
                 Spacer()
-                PrimaryButton("Add App", icon: "plus") {
+                PrimaryButton("Ajouter une app", icon: "plus") {
                     appPickerController.show(from: NSApp.keyWindow)
                 }
             }
@@ -34,10 +34,10 @@ struct AppsSettingsView: View {
             Image(systemName: "lock.open")
                 .font(.system(size: 40))
                 .foregroundColor(BonsoirNonColors.textSecondary)
-            Text("No protected apps yet")
+            Text("Aucune app protégée")
                 .font(BonsoirNonTypography.headline)
                 .foregroundColor(.secondary)
-            Text("Add apps to protect them with Touch ID or password.")
+            Text("Ajoute des apps pour les protéger avec Touch ID ou un mot de passe.")
                 .font(BonsoirNonTypography.caption)
                 .foregroundColor(.secondary)
             Spacer()
@@ -66,7 +66,7 @@ struct AppsSettingsView: View {
                             .foregroundColor(app.autoClose ? BonsoirNonColors.gold : BonsoirNonColors.textSecondary)
                     }
                     .buttonStyle(.plain)
-                    .help(app.autoClose ? "Auto-close enabled" : "Enable auto-close when inactive")
+                    .help(app.autoClose ? "Fermeture automatique activée" : "Fermer automatiquement après inactivité")
 
                     Toggle("", isOn: Binding(
                         get: { app.isEnabled },
@@ -75,7 +75,8 @@ struct AppsSettingsView: View {
                                 manager.toggleApp(app)
                             } else {
                                 // Turning protection off weakens security: authenticate first.
-                                requireAuthentication(reason: "Stop protecting \(app.name)") {
+                                requireAuthentication(reason: "Ne plus protéger \(app.name)") {
+                                    ActivityLog.shared.record(.appUnprotected, app: app.name)
                                     manager.toggleApp(app)
                                 }
                             }
@@ -85,7 +86,8 @@ struct AppsSettingsView: View {
                     .labelsHidden()
 
                     Button(action: {
-                        requireAuthentication(reason: "Remove \(app.name) from protected apps") {
+                        requireAuthentication(reason: "Retirer \(app.name) des apps protégées") {
+                            ActivityLog.shared.record(.appUnprotected, app: app.name)
                             manager.removeApp(app)
                         }
                     }) {
@@ -101,8 +103,11 @@ struct AppsSettingsView: View {
             .onDelete { indexSet in
                 let appsToRemove = indexSet.map { manager.apps[$0] }
                 let names = appsToRemove.map(\.name).joined(separator: ", ")
-                requireAuthentication(reason: "Remove \(names) from protected apps") {
-                    appsToRemove.forEach { manager.removeApp($0) }
+                requireAuthentication(reason: "Retirer \(names) des apps protégées") {
+                    appsToRemove.forEach {
+                        ActivityLog.shared.record(.appUnprotected, app: $0.name)
+                        manager.removeApp($0)
+                    }
                 }
             }
         }

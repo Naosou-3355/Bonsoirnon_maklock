@@ -7,9 +7,10 @@ import Security
 /// The password itself is never stored: only a salted PBKDF2-HMAC-SHA256 hash
 /// (600,000 iterations, per the OWASP Password Storage Cheat Sheet).
 final class KeychainManager {
-    static let shared = KeychainManager()
+    static let shared = KeychainManager(service: "com.bonsoirnon.app")
 
-    private let service = "com.bonsoirnon.app"
+    /// Keychain service name. Tests use a different one so they never touch real data.
+    let service: String
     private let account = "backup-password-hash"
 
     private static let iterations: UInt32 = 600_000
@@ -17,7 +18,9 @@ final class KeychainManager {
     private static let hashLength = 32
     private static let formatPrefix = "pbkdf2-sha256"
 
-    private init() {}
+    init(service: String) {
+        self.service = service
+    }
 
     /// Hash and save a password to the Keychain.
     @discardableResult
@@ -88,6 +91,53 @@ final class KeychainManager {
             kSecAttrAccount as String: account
         ]
 
+        let status = SecItemDelete(query as CFDictionary)
+        return status == errSecSuccess || status == errSecItemNotFound
+    }
+
+    // MARK: - Generic secure storage
+
+    /// Read a data blob stored under `account` (nil if absent).
+    func data(forAccount account: String) -> Data? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        var result: AnyObject?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess else { return nil }
+        return result as? Data
+    }
+
+    /// Store a data blob under `account`, replacing any previous value.
+    @discardableResult
+    func setData(_ data: Data, forAccount account: String) -> Bool {
+        let match: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account
+        ]
+        let update: [String: Any] = [kSecValueData as String: data]
+        let status = SecItemUpdate(match as CFDictionary, update as CFDictionary)
+        if status == errSecSuccess { return true }
+        guard status == errSecItemNotFound else { return false }
+
+        var add = match
+        add[kSecValueData as String] = data
+        add[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        return SecItemAdd(add as CFDictionary, nil) == errSecSuccess
+    }
+
+    /// Remove the blob stored under `account`.
+    @discardableResult
+    func removeData(forAccount account: String) -> Bool {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account
+        ]
         let status = SecItemDelete(query as CFDictionary)
         return status == errSecSuccess || status == errSecItemNotFound
     }

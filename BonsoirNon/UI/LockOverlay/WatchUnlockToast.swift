@@ -119,10 +119,10 @@ private struct WatchUnlockToastView: View {
                 .foregroundColor(BonsoirNonColors.gold)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Unlocked")
+                Text("Déverrouillé")
                     .font(BonsoirNonTypography.headline)
                     .foregroundColor(BonsoirNonColors.textPrimary)
-                Text("Apple Watch is nearby")
+                Text("L'Apple Watch est à proximité")
                     .font(BonsoirNonTypography.caption)
                     .foregroundColor(BonsoirNonColors.textSecondary)
             }

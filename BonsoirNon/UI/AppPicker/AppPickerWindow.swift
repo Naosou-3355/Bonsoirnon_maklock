@@ -35,7 +35,7 @@ final class AppPickerWindowController {
             backing: .buffered,
             defer: false
         )
-        window.title = "Add Applications"
+        window.title = "Ajouter des applications"
         window.contentViewController = hostingController
         window.isReleasedWhenClosed = false
 

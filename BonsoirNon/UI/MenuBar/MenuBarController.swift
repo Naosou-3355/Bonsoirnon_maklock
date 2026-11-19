@@ -37,7 +37,7 @@ final class MenuBarController {
                 // Keep the popover open while the Touch ID dialog has focus.
                 popover?.behavior = .applicationDefined
                 AuthenticationService.shared.confirmSensitiveAction(
-                    reason: "Turn off Bonsoir, non protection"
+                    reason: "Couper la protection de Bonsoir, non"
                 ) { success in
                     popover?.behavior = .transient
                     completion(success)
@@ -49,7 +49,7 @@ final class MenuBarController {
                 NotificationCenter.default.post(name: .openSettings, object: screen)
             },
             onQuitClicked: {
-                NSApplication.shared.terminate(nil)
+                AppDelegate.terminateAuthorized()
             }
         ))
         self.popover = popover
@@ -74,6 +74,11 @@ final class MenuBarController {
         }
     }
 
+    /// Close the menu if it is open.
+    func closePopover() {
+        hidePopover()
+    }
+
     private func hidePopover() {
         popover?.performClose(nil)
     }
@@ -84,6 +89,7 @@ final class MenuBarController {
         Defaults.shared.appSettings = settings
 
         if !settings.isProtectionEnabled {
+            ActivityLog.shared.record(.protectionTurnedOff)
             OverlayWindowService.shared.dismissAll()
             iconState = .idle
         } else {
@@ -132,4 +138,5 @@ final class MenuBarController {
 
 extension Notification.Name {
     static let openSettings = Notification.Name("com.bonsoirnon.app.openSettings")
+    static let lockAllNow = Notification.Name("com.bonsoirnon.app.lockAllNow")
 }
