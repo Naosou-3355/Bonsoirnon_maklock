@@ -74,6 +74,11 @@ final class MenuBarController {
         }
     }
 
+    /// Close the menu if it is open.
+    func closePopover() {
+        hidePopover()
+    }
+
     private func hidePopover() {
         popover?.performClose(nil)
     }
@@ -132,4 +137,5 @@ final class MenuBarController {
 
 extension Notification.Name {
     static let openSettings = Notification.Name("com.bonsoirnon.app.openSettings")
+    static let lockAllNow = Notification.Name("com.bonsoirnon.app.lockAllNow")
 }

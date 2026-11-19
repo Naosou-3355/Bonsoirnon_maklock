@@ -79,6 +79,10 @@ struct MenuBarView: View {
                 .padding(.horizontal, 8)
 
             // Actions
+            MenuBarButton(title: "Lock All Now", icon: "lock.fill", shortcut: "⌃⌥⌘L") {
+                NotificationCenter.default.post(name: .lockAllNow, object: nil)
+            }
+
             MenuBarButton(title: "Settings...", icon: "gearshape") {
                 onSettingsClicked()
             }
@@ -121,6 +125,7 @@ struct MenuBarView: View {
 private struct MenuBarButton: View {
     let title: String
     let icon: String
+    var shortcut: String? = nil
     let action: () -> Void
 
     @State private var isHovered = false
@@ -134,6 +139,11 @@ private struct MenuBarButton: View {
                 Text(title)
                     .font(BonsoirNonTypography.body)
                 Spacer()
+                if let shortcut {
+                    Text(shortcut)
+                        .font(BonsoirNonTypography.caption)
+                        .foregroundColor(.secondary)
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)

@@ -1,9 +1,13 @@
 import AppKit
+import HotKey
 import UserNotifications
 
 /// Application delegate responsible for lifecycle and menu bar setup.
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let menuBarController = MenuBarController()
+
+    /// Global shortcut for "Lock All Now" (Control + Option + Command + L).
+    private var lockAllHotKey: HotKey?
 
     /// Set when quitting is legitimate: menu Quit (authenticated), logout, shutdown.
     private static var terminationAuthorized = false
@@ -40,6 +44,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         menuBarController.setup()
+
+        // "Lock All Now": menu item and global shortcut.
+        NotificationCenter.default.addObserver(forName: .lockAllNow, object: nil, queue: .main) { [weak self] _ in
+            self?.lockAllNow()
+        }
+        lockAllHotKey = HotKey(key: .l, modifiers: [.control, .option, .command])
+        lockAllHotKey?.keyDownHandler = { [weak self] in
+            self?.lockAllNow()
+        }
 
         // Block keystrokes to locked apps (needs Accessibility; asked once).
         KeyboardGuard.shared.startIfPossible()
@@ -190,6 +203,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if showedOverlay {
             menuBarController.iconState = .locked
         }
+    }
+
+    /// Forget every unlock right now: background protected apps are hidden, the one
+    /// in front shows the lock screen. For when you step away from the Mac.
+    private func lockAllNow() {
+        guard Defaults.shared.appSettings.isProtectionEnabled else { return }
+        menuBarController.closePopover()
+        AppMonitorService.shared.clearAllAuthentications()
+
+        let frontID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+        for app in ProtectedAppsManager.shared.apps where app.isEnabled && !SafetyManager.isBlacklisted(app.bundleIdentifier) {
+            guard app.bundleIdentifier != frontID else { continue }
+            OverlayWindowService.shared.hideRunningApp(bundleIdentifier: app.bundleIdentifier)
+        }
+        lockFrontmostProtectedApp()
+        NSLog("[BonsoirNon] Lock All Now")
     }
 
     /// Show the overlay for the frontmost app if it is protected and not unlocked.
